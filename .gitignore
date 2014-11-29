@@ -1,2 +1,4 @@
 kernel.img
 obj
+*~
+*.swp
