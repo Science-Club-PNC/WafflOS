@@ -44,16 +44,16 @@ void terminal_writechar(char c)
     }
     vga_buffer[terminal_y * terminal_width + terminal_x] = make_vgaentry(c, terminal_color);
 
-    if (++terminal_x > terminal_width) {
+    if (++terminal_x >= terminal_width) {
 newline:
         terminal_x = 0;
 
-        if (++terminal_y > terminal_height) {
+        if (++terminal_y >= terminal_height) {
             size_t terminal_size = terminal_width * terminal_height;
             for (size_t pos = terminal_width; pos < terminal_size; pos++) {
                 vga_buffer[pos - terminal_width] = vga_buffer[pos];
             }
-            for (size_t pos = terminal_width * terminal_height - 1; pos < terminal_size; pos++) {
+            for (size_t pos = terminal_width * (terminal_height - 1); pos < terminal_size; pos++) {
                 vga_buffer[pos] = make_vgaentry(' ', make_color(color_white, color_black));
             }
 
@@ -64,7 +64,7 @@ newline:
 
 void terminal_writestring(char *str)
 {
-    size_t str_size = strlen(str);
+    size_t str_size = strlen(str);  // TODO: This will only work with ASCII characters
     for (size_t i = 0; i < str_size; i++) {
         terminal_writechar(str[i]);
     }
