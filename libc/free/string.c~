@@ -4,9 +4,9 @@
 
 char* string_reverse(char* target)
 {
-	size_t len = strlen(target);	
+	size_t len = strlen(target)--;	
 	char* i = target;
-	char* j = target + len -1;
+	char* j = target + len;
 	
 	while (i < j) {
 		char temp = *i;	
