@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
+char *string_reverse(char *target, size_t len);
+char *int_to_string(int a, char *target, size_t len);
 size_t strlen(char *str);
-char* int_to_string(int a, char* target, size_t len);
-char* string_reverse(char* target);
 
 #endif

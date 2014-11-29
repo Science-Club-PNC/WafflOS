@@ -5,6 +5,7 @@
 static const char *potatoes = (char *)"POTATOES";
 static const int fucks_given = -1;
 
+// Indent with 4 spaces
 enum asdf {
     qwert  // Same goes for enums
 };
