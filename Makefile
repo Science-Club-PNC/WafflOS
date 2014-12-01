@@ -9,8 +9,8 @@ LDFLAGS = -O2 -ffreestanding -nostdlib -lgcc
 
 dir_object = obj
 
-sources = $(call rwildcard, */, *.c *.s)
-objects = $(patsubst %.s, $(dir_object)/%.o, $(patsubst %.c, $(dir_object)/%.o, $(sources)))  # TODO: Find a way to make this shorter
+sources := $(call rwildcard, */, *.c *.s)
+objects := $(patsubst %.s, $(dir_object)/%.o, $(patsubst %.c, $(dir_object)/%.o, $(sources)))  # TODO: Find a way to make this shorter
 
 .PHONY: all
 all: kernel.img
