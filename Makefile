@@ -1,11 +1,12 @@
-rwildcard := $(foreach d, $(wildcard $1*), $(filter $(subst *, %, $2), $d) $(call rwildcard, $d/, $2))
+rwildcard = $(foreach d, $(wildcard $1*), $(filter $(subst *, %, $2), $d) $(call rwildcard, $d/, $2))
 
-CC ?= i686-elf-gcc
-AS ?= i686-elf-as
-QEMU ?= qemu-system-i386
+CC := i686-elf-gcc
+AS := i686-elf-as
+QEMU := qemu-system-i386
 
-CFLAGS ?= -std=c11 -O2 -Wall -Wextra -ffreestanding 
-LDFLAGS ?= -O2 -ffreestanding -nostdlib -lgcc
+warnings := -Wall -Wextra #-Wno-unused-variable
+CFLAGS = -std=c11 -O2 $(warnings) -ffreestanding
+LDFLAGS = -O2 -ffreestanding -nostdlib -lgcc
 
 dir_object := obj
 
@@ -24,6 +25,10 @@ clean:
 run: kernel.img
 	@$(QEMU) -kernel $<
 
+.PHONY: wno
+wno: warnings := 
+wno: all
+
 kernel.img: extraCFLAGS = -I libc/free/
 kernel.img: $(filter-out $(dir_object)/kernel/* $(dir_object)/libc/free/*, $(objects))
 	@echo "[$(CC)] Linking $@"
@@ -36,4 +41,4 @@ $(dir_object)/%.o: %.s
 $(dir_object)/%.o: %.c
 	@mkdir -p "$(@D)"
 	@echo "[$(CC)] Compiling $<"
-	@$(COMPILE.c) $(extraCFLAGS) $(OUTPUT_OPTION) $<
+	@$(COMPILE.c) $(extraCFLAGS) -gnatb $(OUTPUT_OPTION) $<
