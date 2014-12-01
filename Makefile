@@ -4,7 +4,7 @@ CC = i686-elf-gcc
 AS = i686-elf-as
 QEMU = qemu-system-i386
 
-CFLAGS = -std=c11 -O2 -Wall -Wextra -Werror -ffreestanding 
+CFLAGS = -std=c11 -O2 -Wall -Wextra -ffreestanding 
 LDFLAGS = -O2 -ffreestanding -nostdlib -lgcc
 
 dir_object = obj

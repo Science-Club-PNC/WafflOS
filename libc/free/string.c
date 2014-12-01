@@ -18,7 +18,7 @@ char *string_reverse(char *target, size_t len)
     return target;
 }
 
-char *int_to_string(int a, char *target, size_t len)
+char* int_to_string(int a, char *target, size_t len)
 {
     size_t i;
     for (i = 0; i < len - 1; i++) {
@@ -33,6 +33,22 @@ char *int_to_string(int a, char *target, size_t len)
     target[i] = '\0';
 
     return string_reverse(target, i);
+}
+
+char* char_to_hex_string(unsigned char a, char *target, size_t len)
+{	
+	if (len < 3)
+		return NULL;
+
+	char cur_heximal = ((a >> 4) & 0x0F); 
+	target[0] = (cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0';
+	
+	cur_heximal = (a & 0x0F);
+	target[1] =  (cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0';
+
+	target[2] = '\0';
+
+	return target;
 }
 
 size_t strlen(char *str)
