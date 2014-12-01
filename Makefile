@@ -1,16 +1,16 @@
-rwildcard = $(foreach d, $(wildcard $1*), $(filter $(subst *, %, $2), $d) $(call rwildcard, $d/, $2))
+rwildcard := $(foreach d, $(wildcard $1*), $(filter $(subst *, %, $2), $d) $(call rwildcard, $d/, $2))
 
-CC = i686-elf-gcc
-AS = i686-elf-as
-QEMU = qemu-system-i386
+CC ?= i686-elf-gcc
+AS ?= i686-elf-as
+QEMU ?= qemu-system-i386
 
-CFLAGS = -std=c11 -O2 -Wall -Wextra -ffreestanding 
-LDFLAGS = -O2 -ffreestanding -nostdlib -lgcc
+CFLAGS ?= -std=c11 -O2 -Wall -Wextra -ffreestanding 
+LDFLAGS ?= -O2 -ffreestanding -nostdlib -lgcc
 
-dir_object = obj
+dir_object := obj
 
-sources = $(call rwildcard, */, *.c *.s)
-objects = $(patsubst %.s, $(dir_object)/%.o, $(patsubst %.c, $(dir_object)/%.o, $(sources)))  # TODO: Find a way to make this shorter
+sources := $(call rwildcard, */, *.c *.s)
+objects := $(patsubst %.s, $(dir_object)/%.o, $(patsubst %.c, $(dir_object)/%.o, $(sources)))  # TODO: Find a way to make this shorter
 
 .PHONY: all
 all: kernel.img
