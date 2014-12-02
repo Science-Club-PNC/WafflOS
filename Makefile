@@ -29,7 +29,7 @@ run: kernel.img
 wno: warnings := 
 wno: all
 
-kernel.img: extraCFLAGS = -I libc/free/
+kernel.img: CFLAGS := $(CFLAGS) -I libc/free/
 kernel.img: $(filter-out $(dir_object)/kernel/* $(dir_object)/libc/free/*, $(objects))
 	@echo "[$(CC)] Linking $@"
 	@$(LINK.o) -T kernel/linker.ld $(OUTPUT_OPTION) $^
@@ -41,4 +41,4 @@ $(dir_object)/%.o: %.s
 $(dir_object)/%.o: %.c
 	@mkdir -p "$(@D)"
 	@echo "[$(CC)] Compiling $<"
-	@$(COMPILE.c) $(extraCFLAGS) -gnatb $(OUTPUT_OPTION) $<
+	@$(COMPILE.c) $(OUTPUT_OPTION) $<
