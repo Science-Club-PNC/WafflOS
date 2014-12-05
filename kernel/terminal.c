@@ -76,7 +76,7 @@ void terminal_updatecursor()
     size_t pos = (terminal_y * terminal_width) + terminal_x;
     // TODO: Base port should be read from the BIOS data area
     outb(0x3D4, 0x0F);
-    outb(0x3D5, (unsigned char)pos);
+    outb(0x3D5, pos);
     outb(0x3D4, 0x0E);
-    outb(0x3D5, (unsigned char)(pos >> 8));
+    outb(0x3D5, pos >> 8);
 }
