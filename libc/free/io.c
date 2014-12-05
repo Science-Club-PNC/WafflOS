@@ -37,5 +37,6 @@ int printf(char *string, ...)
         }
     }
 
+    terminal_updatecursor();
     return pos;
 }
