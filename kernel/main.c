@@ -5,6 +5,6 @@
 void main()
 {
 	terminal_reset();
-	init_mem();	
-	test_mem();	
+	init_heap();
+	test_heap();
 }

@@ -4,7 +4,7 @@ CC := i686-elf-gcc
 AS := i686-elf-as
 QEMU := qemu-system-i386
 
-warnings := -Wall -Wextra #-Wno-unused-variable
+warnings := -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter
 CFLAGS = -std=c11 -O2 $(warnings) -ffreestanding
 LDFLAGS = -O2 -ffreestanding -nostdlib -lgcc
 

@@ -1,187 +1,265 @@
 #include "terminal.h"
 #include "malloc.h"
+
 #include <string.h>
- 
-//#define buffer_size 0x80000
+#include <stdbool.h>
+#include <stdint.h>
 
-#define buffer_size 0x40
-uint8_t buffer[buffer_size];
+// Define struct to point towards the end and start of used memory
+struct mem_tag{
+    void* start;
+    void* end;
+    struct mem_tag* next;
+};
 
-struct mem_tag* first_mem_tag;
-struct mem_tag* last_mem_tag;
+// Add an array to the stack to act as heap.
+// TODO: Create the heap dynamicly relative to the available size.
+#define heap_size 0x40
+uint8_t heap_array[heap_size];
 
-void init_mem()
-{	
-	first_mem_tag = (struct mem_tag*)(buffer + buffer_size) - 1;
-	last_mem_tag = first_mem_tag;
-	
-	first_mem_tag->next = NULL;
-	first_mem_tag->start = buffer;
-	first_mem_tag->end = first_mem_tag;
-}
+// Define pointers to the start and endof the heap (this area will shrink when adding memory tags). Note that heap_end is just outside of the heap.
+void* heap_start;
+void* heap_end;
 
-void print_mem()
-{	
-	struct mem_tag* cur_tag = first_mem_tag;	
+// Define the memory in the heap used for tagging memory.
+struct mem_tag* tag_space_start;
+struct mem_tag* tag_space_end;
 
-	for (size_t i = 0; i < buffer_size; i++) {
-		if (cur_tag == NULL)
-		{
-			terminal_setcolor(color_white, color_red);
-		} else if (cur_tag->start <= (void*)(buffer+i)) {
-			if (cur_tag->end > (void*)(buffer+i)) {
-				terminal_setcolor(color_white, color_green);
-			} else {
-				cur_tag = cur_tag->next;
-				terminal_setcolor(color_white, color_red);
-			}
-		} else {
-			terminal_setcolor(color_white, color_red);
-		}
-		
+// Define pointers to point towards the first and last memory tag
+struct mem_tag* first_tag;
+struct mem_tag* last_tag;
 
-		uint8_t cur_heximal = ((buffer[i] >> 4) & 0x0F); 
-		terminal_writechar((cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0');
-		cur_heximal = (buffer[i] & 0x0F);
-		terminal_writechar((cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0');
-		if (i % 32 == 31) {
-			terminal_setcolor(color_white, color_black);			
-			terminal_writechar('\n');
-		} else if (i % 4 == 3) {
-			terminal_setcolor(color_white, color_black);		
-			terminal_writechar(' ');
-		}
-	}
-	terminal_setcolor(color_white, color_black);
-}
+// Define the tag that has the lowest location in memory.
+struct mem_tag* lowest_tag;
 
-void test_mem()
-{	
-	print_mem();
-	terminal_writechar('\n');	
+// Define the size of the buffer (in mem_tags) that reserves some extra memory after the last mem_tag to act as buffer when memory is (nearly) full. Should be atleast 1 to append extra tags.
+size_t tag_space_buffer_size;
 
-	uint32_t* a = malloc(4);
-	*a = 0xAAAAAAAA;
-	uint32_t* b = malloc(4);
-	*b = 0xBBBBBBBB;
-	uint32_t* c = malloc(4);
-	*c = 0xCCCCCCCC;
-
-	print_mem();
-	terminal_writechar('\n');	
-
-	free(a);
-	free(b);
-
-	print_mem();
-	terminal_writechar('\n');
-	
-	uint16_t* d = malloc(2);
-	*d = 0xDDDD;
-
-	print_mem();
-	terminal_writechar('\n');
-}
-
-inline void add_mem_tag(void* start, void* end, struct mem_tag* tag_before)
-{	
-	struct mem_tag* tag_spot = (struct mem_tag*)(buffer + buffer_size) - 1;
-	while (tag_spot->end != NULL)
-	{
-		tag_spot--;
-	}
-
-	tag_spot->start = start;
-	tag_spot->end = end;
-	if (tag_before == NULL) {
-		tag_spot->next = first_mem_tag;
-		first_mem_tag = tag_spot;		
-	} else {
-		tag_spot->next = tag_before->next;
-		tag_before->next = tag_spot;
-	}
-}
-
-inline void remove_mem_tag(struct mem_tag* mem_tag, struct mem_tag* tag_before)
+// Initializes the heap (may be used to completely reset the heap)
+void init_heap()
 {
-	if (tag_before == NULL) {
-		first_mem_tag = mem_tag->next;
-	} else {
-		tag_before->next = mem_tag->next;
-	}
+    tag_space_buffer_size = 1;
 
-	mem_tag->end = NULL;
+    tag_space_end = (struct mem_tag*)(heap_array + heap_size);
+    tag_space_start = tag_space_end - tag_space_buffer_size;
+
+    heap_start = (void*)heap_array;
+    heap_end = (void*)tag_space_start;
+
+    first_tag = NULL;
+    last_tag = NULL;
+    lowest_tag = NULL;
 }
 
-void* malloc(size_t requested_size)
+void resize_tag_space()
 {
-	void* ptr = NULL;
-	size_t actual_size = requested_size + sizeof(size_t);
-
-	struct mem_tag* cur_mem_tag = first_mem_tag;
-	struct mem_tag* last_mem_tag = NULL;
-
-	while (cur_mem_tag != NULL) {
-		size_t mem_size = cur_mem_tag->end - cur_mem_tag->start;
-		if (mem_size >= actual_size) {
-			ptr = cur_mem_tag->start + sizeof(size_t);
-			*(size_t*)(cur_mem_tag->start) = requested_size;
-			
-			if (mem_size > actual_size) {
-				cur_mem_tag->start += actual_size;
-				terminal_writestring("log: shrink start\n");
-			} else {
-				remove_mem_tag(cur_mem_tag, last_mem_tag);
-				terminal_writestring("log: remove tag\n");
-			}
-
-			break;
-		}
-
-		last_mem_tag = cur_mem_tag;
-		cur_mem_tag = cur_mem_tag->next;
-	}
-
-	return ptr;
+    // Resize the tag space to have tag space buffer available.
+    if (lowest_tag == NULL) {
+        tag_space_start = tag_space_end - tag_space_buffer_size;
+    } else {
+        tag_space_start = lowest_tag - tag_space_buffer_size;
+    }
+    // Prevent that the tag space leaks into used heap space.
+    if ((last_tag != NULL) && (last_tag->end > (void*)tag_space_start)) {
+        terminal_writestring("log: space leak\n");
+        tag_space_start = last_tag->end;
+    }
+    // Resize the heap to correspond with the tag space
+    heap_end = tag_space_start;
 }
 
-void free(void* ptr)
+inline struct mem_tag* add_tag(void* start, void* end, struct mem_tag* prev_tag) {
+    // Define the new tag
+    struct mem_tag* new_tag = tag_space_end;
+    // Find a free spot for the new tag
+    do {
+        new_tag--;
+        if (new_tag < tag_space_start) {
+            // Tag space is full. Adding the tag failed.
+            return NULL;
+        }
+        if (new_tag < lowest_tag || lowest_tag == NULL) {
+            lowest_tag = new_tag;
+            resize_tag_space();
+            break;
+        }
+    } while (new_tag->end != NULL);
+
+    new_tag->start = start;
+    new_tag->end = end;
+
+    if (prev_tag == NULL) {
+        new_tag->next = first_tag;
+        first_tag = new_tag;
+    } else {
+        new_tag->next = prev_tag->next;
+        prev_tag->next = new_tag;
+    }
+    if (new_tag->next == NULL) {
+        last_tag = new_tag;
+    }
+    return new_tag;
+}
+
+inline void remove_tag(struct mem_tag* removed_tag, struct mem_tag* prev_tag) {
+    // Change the pointer of the previous tag or the first tag pointer to point towards the next tag after te deleted tag.
+    if (prev_tag == NULL) {
+        first_tag = removed_tag->next;
+    } else {
+        prev_tag->next = removed_tag->next;
+    }
+    // Mark memory area unused by setting the end attribute to null.
+    removed_tag->end = NULL;
+    // Check if the tag was the lowest, and if so, find the new lowest tag.
+    if (removed_tag == lowest_tag) {
+        do {
+            lowest_tag++;
+            if (lowest_tag >= tag_space_end) {
+                lowest_tag = NULL;
+                break;
+            }
+        } while (lowest_tag->end == NULL);
+        resize_tag_space();
+    }
+}
+
+inline struct mem_tag* split_tag(void* start, void* end, struct mem_tag* splitted_tag) {
+    // Add a new tag to mark the upper part memory marked by the splitted tag. 
+    struct mem_tag* new_tag = add_tag(end, splitted_tag->end, splitted_tag);
+
+    // Check if adding the memory tag sucseed, and if not return NULL.
+    if (new_tag == NULL) {
+        return NULL;
+    }
+
+    // Lower the end of the splitted tag to only mark the lower part memory previously marked by the splitted tag. 
+    splitted_tag->end = start;
+    return new_tag;
+}
+
+inline void merge_tag(struct mem_tag* first_tag) {
+    // Define the tag to remove in the merge.
+    struct mem_tag* second_tag = first_tag->next;
+    // Merge the tags by setting first tag to overlap both tags. 
+    first_tag->end = second_tag->end;
+    // Remove the now unused seconds tag.
+    remove_tag(second_tag, first_tag);
+}
+
+void* malloc(size_t requested_size) {
+    // Define the actual needed size.
+    size_t actual_size = requested_size + sizeof(size_t);
+
+    // Define pointers to the end of the requested memory.
+    void* start_ptr = heap_start;
+    void* end_ptr = heap_start + actual_size;
+
+    struct mem_tag* cur_tag = first_tag;
+    struct mem_tag* prev_tag = NULL;
+
+    // If no memory is currently allocated then just check if the actual size fits inside the heap (minus the buffer to be.) 
+    if (cur_tag == NULL) {
+        if (end_ptr <= heap_end - sizeof(struct mem_tag)) {
+            add_tag(start_ptr, end_ptr, NULL);
+            goto found_memory;
+        } else {
+            return NULL;
+        }
+    }
+    // Check if there is enough space before the first tagged space.
+    if (end_ptr <= cur_tag->start) {
+        if (end_ptr == cur_tag->start) {
+            cur_tag->start = start_ptr;
+        } else {
+            add_tag(start_ptr, end_ptr, NULL);
+        }
+        goto found_memory;
+    }
+    // Check if there is enough space between some tagged spaces.
+    prev_tag = cur_tag;
+    cur_tag = cur_tag->next;
+    #define disable_this_error_loop
+    #ifndef disable_this_error_loop
+    while (cur_tag != NULL) {
+        start_ptr = prev_tag->end;
+        end_ptr = prev_tag->end + actual_size;
+        if (end_ptr <= cur_tag->start) {
+            if (end_ptr == cur_tag->start) {
+                merge_tag(prev_tag);
+            } else {
+                prev_tag->end = end_ptr;
+            }
+            goto found_memory;
+        }
+        prev_tag = cur_tag;
+        cur_tag = cur_tag->next;
+    }
+    #endif
+    // Check if there is enough space after the last tagged space.
+    start_ptr = prev_tag->end;
+    end_ptr = prev_tag->end + actual_size;
+    if (end_ptr <= cur_tag->start) {
+        prev_tag->end = end_ptr;
+        goto found_memory;
+    } else {
+        return NULL;
+    }
+    // Define a label to prepare the memory for usage and return it.
+    found_memory:
+    *(size_t*)(start_ptr) = requested_size;
+    return start_ptr + sizeof(size_t);
+}
+
+void free(void* ptr) {
+    
+}
+
+void print_heap()
 {
-	struct mem_tag* before_tag = NULL;
-	struct mem_tag* after_tag = first_mem_tag;
+    struct mem_tag* cur_tag = first_tag;
+    // Loop through all bytes in the heap and the tag space, (assuming the tag space comes directly after the heap.)
+    for (uint8_t* ptr = heap_start; (void*)ptr < (void*)(tag_space_end); ptr++) {
+        // Set background color to represent the memory usage.
+        if ((void*)ptr < (void*)heap_end) {
+            check_memory_is_tagged:
+            if (cur_tag == NULL || (void*)ptr < cur_tag->start) {
+                // The memory is free
+                terminal_setcolor(color_white, color_green);
+            } else if ((void*)ptr >= cur_tag->end) {
+                cur_tag = cur_tag->next;
+                goto check_memory_is_tagged;
+            } else {
+                // The Memory is used
+                terminal_setcolor(color_white, color_red);
+            }
+        } else {
+            // The memory is reserved for tags
+            terminal_setcolor(color_white, color_light_blue);
+        }
+        
+        // Write two heximal chars representing the current byte.
+        uint8_t cur_heximal = ((*ptr >> 4) & 0x0F); 
+        terminal_writechar((cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0');
+        cur_heximal = (*ptr & 0x0F);
+        terminal_writechar((cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0');
+        // Write a space or enter once in a while to keep the output readable.
+        if (((void*)ptr - heap_start) % 32 == 31) {
+            terminal_setcolor(color_white, color_black);
+            terminal_writechar('\n');
+        } else if (((void*)ptr - heap_start) % 4 == 3) {
+            terminal_setcolor(color_white, color_black);
+            terminal_writechar(' ');
+        }
+    }
+    // Reset output color.
+    terminal_setcolor(color_white, color_black);
+}
 
-	void* mem_start = ptr - sizeof(size_t);
-	size_t mem_size = *(size_t*)mem_start + sizeof(size_t);
-	void* mem_end = mem_start + mem_size;
-
-	if (mem_start < (void*)buffer) {
-		terminal_writestring("error: mem1\n");
-		return;
-	}
-
-	while(after_tag != NULL) {
-		if (mem_end < after_tag->start) {
-			if (before_tag == NULL || mem_start >= before_tag->end) {
-				if (mem_end == after_tag->start) {
-					after_tag->start = mem_start;
-					terminal_writestring("log: grow start\n");
-				} else if (before_tag != NULL && mem_start == before_tag->end) {
-					before_tag->end = mem_end;
-					terminal_writestring("log: grow end\n");
-				} else {
-					add_mem_tag(mem_start, mem_end, before_tag);
-					terminal_writestring("log: add tag\n");
-				}
-				return;
-			} else {
-				terminal_writestring("error: mem2\n");
-				return;
-			}
-		}			
-				
-		before_tag = after_tag;
-		after_tag = after_tag->next;
-	}
-	terminal_writestring("error: mem3\n");
-	return;
+void test_heap()
+{    
+    print_heap();
+    uint32_t* a = malloc(4);
+    print_heap();
+    uint32_t* b = malloc(4);
+    print_heap();
 }
