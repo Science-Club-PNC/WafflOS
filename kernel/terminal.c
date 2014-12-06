@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "register.h"
 #include "terminal.h"
 
 uint16_t *vga_buffer = (uint16_t *)0xB8000;
@@ -68,4 +69,14 @@ void terminal_writestring(char *str)
     for (size_t i = 0; i < str_size; i++) {
         terminal_writechar(str[i]);
     }
+}
+
+void terminal_updatecursor()
+{
+    size_t pos = (terminal_y * terminal_width) + terminal_x;
+    // TODO: Base port should be read from the BIOS data area
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, pos);
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, pos >> 8);
 }

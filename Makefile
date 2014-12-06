@@ -5,7 +5,7 @@ AS := i686-elf-as
 QEMU := qemu-system-i386
 
 warnings := -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter
-CFLAGS = -std=c11 -O2 $(warnings) -ffreestanding
+CFLAGS = -std=c11 -O2 $(warnings) -ffreestanding -I .
 LDFLAGS = -O2 -ffreestanding -nostdlib -lgcc
 
 dir_object := obj
