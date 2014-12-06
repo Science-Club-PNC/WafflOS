@@ -5,7 +5,7 @@
 
 #include "io.h"
 
-#define max_int 10
+#define max_int 20
 
 int printf(char *string, ...)
 {

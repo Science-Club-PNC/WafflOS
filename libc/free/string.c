@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdbool.h>
 
 #include "string.h"
 
@@ -18,18 +19,30 @@ char *string_reverse(char *target, size_t len)
     return target;
 }
 
+//TODO: make this function work when a = INT_MIN
 char *int_to_string(int a, char *target, size_t len)
 {
+    bool negative_input = false;
+    if (a<0)
+    {
+        a = -a;
+        negative_input = true;
+    }
+    
     size_t i;
     for (i = 0; i < len - 1; i++) {
-        target[i] = (char)a % 10 + '0';
-        a /= 10;
+        int extract = a % 10;
+        target[i] = (char)extract + '0';
+        a = (a - extract) / 10;
         if (a == 0) {
             i++;
             break;
         }
     }
-
+    if (negative_input && (i < len - 1)) {
+        target[i] = '-';
+        i++;
+    }
     target[i] = '\0';
 
     return string_reverse(target, i);
