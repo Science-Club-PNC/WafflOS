@@ -178,8 +178,6 @@ void* malloc(size_t requested_size) {
     // Check if there is enough space between some tagged spaces.
     prev_tag = cur_tag;
     cur_tag = cur_tag->next;
-    #define disable_this_error_loop
-    #ifndef disable_this_error_loop
     while (cur_tag != NULL) {
         start_ptr = prev_tag->end;
         end_ptr = prev_tag->end + actual_size;
@@ -194,11 +192,10 @@ void* malloc(size_t requested_size) {
         prev_tag = cur_tag;
         cur_tag = cur_tag->next;
     }
-    #endif
     // Check if there is enough space after the last tagged space.
     start_ptr = prev_tag->end;
     end_ptr = prev_tag->end + actual_size;
-    if (end_ptr <= cur_tag->start) {
+    if (end_ptr <= heap_end) {
         prev_tag->end = end_ptr;
         goto found_memory;
     } else {
@@ -259,7 +256,9 @@ void test_heap()
 {    
     print_heap();
     uint32_t* a = malloc(4);
+    if (a != NULL) *a = 0xAAAAAAAA;
     print_heap();
     uint32_t* b = malloc(4);
+    if (b != NULL) *b = 0xBBBBBBBB;
     print_heap();
 }
