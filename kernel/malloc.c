@@ -285,9 +285,9 @@ void print_heap()
         }
         
         // Write two heximal chars representing the current byte.
-        uint8_t cur_heximal = ((*ptr >> 4) & 0x0F); 
+        uint8_t cur_heximal = (*ptr & 0x0F);
         terminal_writechar((cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0');
-        cur_heximal = (*ptr & 0x0F);
+        cur_heximal = ((*ptr >> 4) & 0x0F);
         terminal_writechar((cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0');
         // Write a space or enter once in a while to keep the output readable.
         if (((void*)ptr - heap_start) % 32 == 31) {
