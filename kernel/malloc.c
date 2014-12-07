@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <io.h>
 
 // Define struct to point towards the end and start of used memory
 struct mem_tag{
@@ -61,7 +62,6 @@ void resize_tag_space()
     }
     // Prevent that the tag space leaks into used heap space.
     if ((last_tag != NULL) && (last_tag->end > (void*)tag_space_start)) {
-        terminal_writestring("log: space leak\n");
         tag_space_start = last_tag->end;
     }
     // Resize the heap to correspond with the tag space
@@ -124,7 +124,7 @@ inline void remove_tag(struct mem_tag* removed_tag, struct mem_tag* prev_tag) {
 }
 
 inline struct mem_tag* split_tag(void* start, void* end, struct mem_tag* splitted_tag) {
-    // Add a new tag to mark the upper part memory marked by the splitted tag. 
+    // Add a new tag to mark the lower part memory marked by the splitted tag. 
     struct mem_tag* new_tag = add_tag(end, splitted_tag->end, splitted_tag);
 
     // Check if adding the memory tag sucseed, and if not return NULL.
@@ -132,8 +132,9 @@ inline struct mem_tag* split_tag(void* start, void* end, struct mem_tag* splitte
         return NULL;
     }
 
-    // Lower the end of the splitted tag to only mark the lower part memory previously marked by the splitted tag. 
+    // Lower the end of the splitted tag to only mark the upper part memory previously marked by the splitted tag. 
     splitted_tag->end = start;
+
     return new_tag;
 }
 
@@ -208,7 +209,37 @@ void* malloc(size_t requested_size) {
 }
 
 void free(void* ptr) {
-    
+    // Find the start and end of the memory to free.
+    void* start_ptr = ptr - sizeof(size_t);
+    size_t actual_size = *(size_t*)(start_ptr) + sizeof(size_t);
+    void* end_ptr = start_ptr + actual_size;
+
+    // Loop through all tag to find in what tagged space the memory to free is.
+    struct mem_tag* prev_tag = NULL;
+    struct mem_tag* cur_tag = first_tag;
+    while (first_tag != NULL) {
+        if (end_ptr <= cur_tag->end) {
+            if (start_ptr >= cur_tag->start) {
+                if (start_ptr == cur_tag->start) {
+                    if (end_ptr == cur_tag->end) {
+                        remove_tag(cur_tag, prev_tag);
+                    } else {
+                        cur_tag->start = end_ptr;
+                    }
+                } else {
+                    if (end_ptr == cur_tag->end) {
+                        cur_tag->end = start_ptr;
+                    } else {
+                        split_tag(start_ptr, end_ptr, cur_tag);
+                    }
+                }
+            } else {
+            }
+            return;
+        }
+        prev_tag = cur_tag;
+        cur_tag = cur_tag->next;
+    }
 }
 
 void print_heap()
@@ -253,12 +284,31 @@ void print_heap()
 }
 
 void test_heap()
-{    
+{
     print_heap();
+    printf("\n");
     uint32_t* a = malloc(4);
     if (a != NULL) *a = 0xAAAAAAAA;
-    print_heap();
     uint32_t* b = malloc(4);
     if (b != NULL) *b = 0xBBBBBBBB;
+    uint32_t* c = malloc(4);
+    if (c != NULL) *c = 0xCCCCCCCC;
     print_heap();
+    printf("\n");
+    free(b);
+    print_heap();
+    printf("\n");
+    uint32_t* d = malloc(4);
+    if (d != NULL) *d = 0xDDDDDDDD;
+    print_heap();
+    printf("\n");
+    free(c);
+    print_heap();
+    printf("\n");
+    free(a);
+    print_heap();
+    printf("\n");
+    free(d);
+    print_heap();
+    printf("\n");
 }
