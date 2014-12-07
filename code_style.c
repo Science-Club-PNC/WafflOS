@@ -2,8 +2,11 @@
 #include <stdio.h>  // Inline comments begin 2 spaces after line (python style)
 
 // Clear, descriptive (long if neccesary) variable/function names, no caps.
-static const char *potatoes = (char *)"POTATOES";
+static const char* potatoes = (char*)"POTATOES";
 static const int fucks_given = -1;
+
+// Constants declared by the preprossesor in caps
+#define PI_TIMES_A_LOT 15296
 
 // Indent with 4 spaces
 enum asdf {
