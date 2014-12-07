@@ -1,7 +1,6 @@
 #include "terminal.h"
 #include "malloc.h"
 
-#include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <io.h>
@@ -39,19 +38,24 @@ size_t tag_space_buffer_size;
 // Initializes the heap (may be used to completely reset the heap)
 void init_heap()
 {
+    // Set the buffer size.
     tag_space_buffer_size = 1;
 
+    // Set the start and end of the tag space.
     tag_space_end = (struct mem_tag*)(heap_array + heap_size);
     tag_space_start = tag_space_end - tag_space_buffer_size;
 
+    // Set the start and end of the heap.
     heap_start = (void*)heap_array;
     heap_end = (void*)tag_space_start;
 
+    // Since there are no tags yet, set all tag pointers to NULL.
     first_tag = NULL;
     last_tag = NULL;
     lowest_tag = NULL;
 }
 
+// Resizes the tag space to fit all tags plus the tag space buffer.
 void resize_tag_space()
 {
     // Resize the tag space to have tag space buffer available.
@@ -68,6 +72,7 @@ void resize_tag_space()
     heap_end = tag_space_start;
 }
 
+// Adds a memory tag that tags the memory from start to end. In the linked list of tags it will come after prev_tag. If prev_tag is NULL then the new tag will be made the first tag. Returs NULL if it failed to add the tag.
 inline struct mem_tag* add_tag(void* start, void* end, struct mem_tag* prev_tag) {
     // Define the new tag
     struct mem_tag* new_tag = tag_space_end;
@@ -79,15 +84,19 @@ inline struct mem_tag* add_tag(void* start, void* end, struct mem_tag* prev_tag)
             return NULL;
         }
         if (new_tag < lowest_tag || lowest_tag == NULL) {
+            // The new tag is the new lowest tag, thus the tag space needs to be resized.
             lowest_tag = new_tag;
             resize_tag_space();
             break;
         }
+    // If this tag spot is marked empty stop the loop.
     } while (new_tag->end != NULL);
 
+    // Set start and end mark on the new tag.
     new_tag->start = start;
     new_tag->end = end;
 
+    // Manage the ordering to make the new tag fit in.
     if (prev_tag == NULL) {
         new_tag->next = first_tag;
         first_tag = new_tag;
@@ -98,9 +107,11 @@ inline struct mem_tag* add_tag(void* start, void* end, struct mem_tag* prev_tag)
     if (new_tag->next == NULL) {
         last_tag = new_tag;
     }
+
     return new_tag;
 }
 
+// Removes the memory tag pointed towards with removed_tag. prev_tag->next should always be removed_tag.
 inline void remove_tag(struct mem_tag* removed_tag, struct mem_tag* prev_tag) {
     // Change the pointer of the previous tag or the first tag pointer to point towards the next tag after te deleted tag.
     if (prev_tag == NULL) {
@@ -123,21 +134,23 @@ inline void remove_tag(struct mem_tag* removed_tag, struct mem_tag* prev_tag) {
     }
 }
 
+// Splits the memory tag pointed towards with removed_tag. start and end define the start and end of the free space between the new tags. returns NULL if it fails to add another memory tag. 
 inline struct mem_tag* split_tag(void* start, void* end, struct mem_tag* splitted_tag) {
-    // Add a new tag to mark the lower part memory marked by the splitted tag. 
+    // Add a new tag to mark the upper part memory marked by the splitted tag. 
     struct mem_tag* new_tag = add_tag(end, splitted_tag->end, splitted_tag);
 
-    // Check if adding the memory tag sucseed, and if not return NULL.
+    // Check if adding the memory tag succeed, and if not return NULL.
     if (new_tag == NULL) {
         return NULL;
     }
 
-    // Lower the end of the splitted tag to only mark the upper part memory previously marked by the splitted tag. 
+    // Lower the end of the splitted tag to only mark the lower part memory previously marked by the splitted tag. 
     splitted_tag->end = start;
 
     return new_tag;
 }
 
+// Merges the memory tag pointed towards with first_tag and first_tag->next.
 inline void merge_tag(struct mem_tag* first_tag) {
     // Define the tag to remove in the merge.
     struct mem_tag* second_tag = first_tag->next;
@@ -147,8 +160,9 @@ inline void merge_tag(struct mem_tag* first_tag) {
     remove_tag(second_tag, first_tag);
 }
 
+// Allocates memory of the requested size and returns a pointer towards it. Returns NULL if it fails to allocate the requested amount of memory.
 void* malloc(size_t requested_size) {
-    // Define the actual needed size.
+    // Define the size needed to hold the requested memory plus the size header.
     size_t actual_size = requested_size + sizeof(size_t);
 
     // Define pointers to the end of the requested memory.
@@ -208,6 +222,7 @@ void* malloc(size_t requested_size) {
     return start_ptr + sizeof(size_t);
 }
 
+// Frees the memory pointed towards by ptr. this function may silently fail in certain conditions. this will lead to  a memory leak unless it is tried again under better conditions.
 void free(void* ptr) {
     // Find the start and end of the memory to free.
     void* start_ptr = ptr - sizeof(size_t);
@@ -222,18 +237,21 @@ void free(void* ptr) {
             if (start_ptr >= cur_tag->start) {
                 if (start_ptr == cur_tag->start) {
                     if (end_ptr == cur_tag->end) {
+                        // The memory to free spans a whole tag, so the tag can be removed.
                         remove_tag(cur_tag, prev_tag);
                     } else {
+                        // The memory to free is located at the end of the tagged space, so the end of the tagged space is moved to the begin of the memory to free.
                         cur_tag->start = end_ptr;
                     }
                 } else {
                     if (end_ptr == cur_tag->end) {
+                        // The memory to free is located at the start of the tagged space, so the end of the tagged space is moved to the begin of the memory to free.
                         cur_tag->end = start_ptr;
                     } else {
+                        // The memory to free is located at neither ends of the tagged space, so the tag needs to be split.
                         split_tag(start_ptr, end_ptr, cur_tag);
                     }
                 }
-            } else {
             }
             return;
         }
@@ -242,6 +260,7 @@ void free(void* ptr) {
     }
 }
 
+// Print the heap and tag space for debuging purpose.
 void print_heap()
 {
     struct mem_tag* cur_tag = first_tag;
@@ -283,6 +302,7 @@ void print_heap()
     terminal_setcolor(color_white, color_black);
 }
 
+// A small test function to test if the memory allocator behaves correctly.
 void test_heap()
 {
     print_heap();
