@@ -9,16 +9,18 @@ CFLAGS = -std=c11 -O2 $(warnings) -ffreestanding -I .
 LDFLAGS = -O2 -ffreestanding -nostdlib -lgcc
 
 dir_object := obj
+dir_test_assembly := test_assembly
 
 sources := $(call rwildcard, */, *.c *.s)
 objects := $(patsubst %.s, $(dir_object)/%.o, $(patsubst %.c, $(dir_object)/%.o, $(sources)))  # TODO: Find a way to make this shorter
+test_assembly := $(patsubst %.c, $(dir_test_assembly)/%.s, $(call rwildcard, */, *.c))
 
 .PHONY: all
 all: kernel.img
 
 .PHONY: clean
 clean:
-	@rm -rf $(dir_object) kernel.img
+	@rm -rf $(dir_object) $(dir_test_assembly) kernel.img
 	@echo "Clean!"
 
 .PHONY: run
@@ -29,6 +31,10 @@ run: kernel.img
 wno: warnings := 
 wno: all
 
+.PHONY: assembly
+assembly: CFLAGS := $(CFLAGS) -I libc/free/
+assembly: $(test_assembly)
+
 kernel.img: CFLAGS := $(CFLAGS) -I libc/free/
 kernel.img: $(filter-out $(dir_object)/kernel/* $(dir_object)/libc/free/*, $(objects))
 	@echo "[$(CC)] Linking $@"
@@ -38,7 +44,13 @@ $(dir_object)/%.o: %.s
 	@mkdir -p "$(@D)"
 	@echo "[$(AS)] Compiling $<"
 	@$(AS) $(OUTPUT_OPTION) $<
+
 $(dir_object)/%.o: %.c
 	@mkdir -p "$(@D)"
 	@echo "[$(CC)] Compiling $<"
 	@$(COMPILE.c) $(OUTPUT_OPTION) $<
+
+$(dir_test_assembly)/%.s: %.c
+	@mkdir -p "$(@D)"
+	@echo "[$(CC)] Compiling $<"
+	@$(COMPILE.c) $(OUTPUT_OPTION) -S -fverbose-asm $<

@@ -37,7 +37,7 @@ void* memmove(void* dst_ptr, const void* src_ptr, size_t size)
 }
 
 //TODO: write word alignment optimalization
-void* memcpy(void* dst_ptr, const void* src_ptr, size_t size
+void* memcpy(void* dst_ptr, const void* src_ptr, size_t size)
 {
     unsigned char* dst = (unsigned char*) dst_ptr;
     const unsigned char* src = (const unsigned char*) src_ptr;
