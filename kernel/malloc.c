@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <io.h>
+#include <string.h>
 
 // Define struct to point towards the end and start of used memory
 struct mem_tag{
@@ -222,6 +223,20 @@ void* malloc(size_t requested_size) {
     return start_ptr + sizeof(size_t);
 }
 
+// Allocates memory of the requested size times the amount, clears the allocated memory space with zero's and returns a pointer towards it. Returns NULL if it fails to allocate the requested amount of memory.
+// TODO: maybe try to allocate the memory in alignment with it's size?
+void* calloc(size_t amount, size_t size)
+{
+    size_t total_size = amount*size;
+    void* ptr = malloc(total_size);
+
+    if (ptr == NULL) return NULL;
+
+    memset(ptr, 0, total_size);
+
+    return ptr;
+}
+
 // Frees the memory pointed towards by ptr. this function may silently fail in certain conditions. this will lead to  a memory leak unless it is tried again under better conditions.
 void free(void* ptr) {
     // Find the start and end of the memory to free.
@@ -318,8 +333,7 @@ void test_heap()
     free(b);
     print_heap();
     printf("\n");
-    uint32_t* d = malloc(4);
-    if (d != NULL) *d = 0xDDDDDDDD;
+    uint32_t* d = calloc(2,2);
     print_heap();
     printf("\n");
     free(c);
