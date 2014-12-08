@@ -3,17 +3,18 @@
 
 #include "string.h"
 
+//TODO: write word alignment optimalization
 void* memmove(void* dst_ptr, const void* src_ptr, size_t size) 
 {
     unsigned char* dst;
     const unsigned char* src;
-    
+
     if (dst_ptr < src_ptr) {
         const unsigned char* src_end = (const unsigned char*)src_ptr + size;
-        
+
         dst = (unsigned char*) dst_ptr;
         src = (const unsigned char*) src_ptr;
-        
+
         while (src < src_end) {
             *dst = *src;
             src++;
@@ -21,24 +22,41 @@ void* memmove(void* dst_ptr, const void* src_ptr, size_t size)
         }
     } else {
         const unsigned char* src_start = (const unsigned char*)src_ptr;
-        
+
         dst = (unsigned char*) dst_ptr + size - 1;
         src = (const unsigned char*) src_ptr + size - 1;
-        
+
         while (src >= src_start) {
             *dst = *src;
             src--;
             dst--;
         }
     }
-    
+
     return dst_ptr;
 }
 
-char *string_reverse(char* target, size_t len)
+//TODO: write word alignment optimalization
+void* memcpy(void* dst_ptr, const void* src_ptr, size_t size
 {
-    char *i = target;
-    char *j = target + len - 1;
+    unsigned char* dst = (unsigned char*) dst_ptr;
+    const unsigned char* src = (const unsigned char*) src_ptr;
+
+    const unsigned char* src_end = (const unsigned char*)src_ptr + size;
+
+    while (src < src_end) {
+        *dst = *src;
+        src++;
+        dst++;
+    }
+
+    return dst_ptr;
+}
+
+char* string_reverse(char* target, size_t len)
+{
+    char* i = target;
+    char* j = target + len - 1;
 
     while (i < j) {
         char temp = *i;
@@ -52,7 +70,7 @@ char *string_reverse(char* target, size_t len)
 }
 
 //TODO: make this function work when a = INT_MIN
-char *int_to_string(int a, char* target, size_t len)
+char* int_to_string(int a, char* target, size_t len)
 {
     bool negative_input = false;
     if (a<0) {
@@ -79,7 +97,7 @@ char *int_to_string(int a, char* target, size_t len)
     return string_reverse(target, i);
 }
 
-char *char_to_hex_string(unsigned char a, char* target, size_t len)
+char* char_to_hex_string(unsigned char a, char* target, size_t len)
 {
     if (len < 3)
         return NULL;

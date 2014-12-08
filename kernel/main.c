@@ -6,8 +6,8 @@
 
 void main()
 {
-	terminal_reset();
+    terminal_reset();
 
-	init_heap();
-	test_heap();
+    init_heap();
+    test_heap();
 }

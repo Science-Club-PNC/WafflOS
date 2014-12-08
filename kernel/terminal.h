@@ -23,7 +23,7 @@ enum vga_color {
 void terminal_setcolor(enum vga_color fg, enum vga_color bg);
 void terminal_reset();
 void terminal_writechar(char c);
-void terminal_writestring(char *str);
+void terminal_writestring(char* str);
 void terminal_updatecursor();
 
 #endif

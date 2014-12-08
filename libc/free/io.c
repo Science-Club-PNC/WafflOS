@@ -7,9 +7,9 @@
 
 #define max_int 20
 
-int printf(char *string, ...)
+int printf(char* string, ...)
 {
-    va_list *args;
+    va_list* args;
     char i[max_int];
     va_start(args, string);
 
@@ -18,7 +18,7 @@ int printf(char *string, ...)
         if (string[pos] == '%') {
             switch (string[++pos]) {
                 case 's':
-                    terminal_writestring(va_arg(args, char *));
+                    terminal_writestring(va_arg(args, char*));
                     break;
                 case 'c':
                     terminal_writechar(va_arg(args, char));

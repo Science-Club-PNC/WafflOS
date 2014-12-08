@@ -5,7 +5,7 @@
 #include "register.h"
 #include "terminal.h"
 
-uint16_t *vga_buffer = (uint16_t *)0xB8000;
+uint16_t* vga_buffer = (uint16_t*)0xB8000;
 uint8_t terminal_color;
 static const size_t terminal_width = 80;
 static const size_t terminal_height = 25;
@@ -63,7 +63,7 @@ newline:
     }
 }
 
-void terminal_writestring(char *str)
+void terminal_writestring(char* str)
 {
     size_t str_size = strlen(str);  // TODO: This will only work with ASCII characters
     for (size_t i = 0; i < str_size; i++) {
