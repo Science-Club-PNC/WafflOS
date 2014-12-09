@@ -15,7 +15,7 @@ struct mem_tag{
 
 // Add an array to the stack to act as heap.
 // TODO: Create the heap dynamicly relative to the available size.
-#define heap_size 0x40
+#define heap_size 0x100000  // you might want to change this value to something like 0x20 for debuging
 uint8_t heap_array[heap_size];
 
 // Define pointers to the start and endof the heap (this area will shrink when adding memory tags). Note that heap_end is just outside of the heap.
@@ -237,7 +237,74 @@ void* calloc(size_t amount, size_t size)
     return ptr;
 }
 
-// Frees the memory pointed towards by ptr. this function may silently fail in certain conditions. this will lead to  a memory leak unless it is tried again under better conditions.
+void* realloc(void* ptr, size_t requested_size)
+{
+    if (ptr == NULL) return malloc(requested_size);  // Just let malloc handle this call.
+    if (requested_size == 0) free(ptr); // Just let free handle this call.
+
+    // Find the start and end of the memory to reallocate.
+    void* old_start_ptr = ptr - sizeof(size_t);
+    size_t old_actual_size = *(size_t*)(old_start_ptr) + sizeof(size_t);
+    void* old_end_ptr = old_start_ptr + old_actual_size;
+
+    // Set the start and end of the memory to reallocate if it where to grow/shrink in place.
+    void* new_start_ptr = old_start_ptr;
+    size_t new_actual_size = requested_size + sizeof(size_t);
+    void* new_end_ptr = new_start_ptr + new_actual_size;
+
+    if (new_actual_size == old_actual_size) return ptr;  // Nothing needs to be done
+
+    // Loop through all tag to find in what tagged space the memory to reallocate is.
+    struct mem_tag* prev_tag = NULL;
+    struct mem_tag* cur_tag = first_tag;
+    while (cur_tag != NULL) {
+        if (old_end_ptr <= cur_tag->end) {
+            if (old_start_ptr >= cur_tag->start) {
+                // Found the tag with the memory to reallocate.
+                if (new_actual_size < old_actual_size) {
+                    // The memory to reallocate is to shrink.
+                    if (old_end_ptr == cur_tag->end) {
+                        cur_tag->end = new_end_ptr;
+                    } else {
+                        if (split_tag(new_end_ptr, old_end_ptr, cur_tag) == NULL)
+                            return ptr;  // failed to shrink the memory to reallocate. Just pretend it did sucseed since the program shouldn't be bothered with internals and free() will still correctly free it.
+                    }
+
+                    *(size_t*)new_start_ptr = requested_size;
+                    return ptr;
+                } else {
+                    // The memory to reallocate is to grow.
+                    if (old_end_ptr == cur_tag->end && (cur_tag->next == NULL ? new_end_ptr <= heap_end : new_end_ptr <= cur_tag->next->start)) {  // Summary: If the memory to reallocate is at the end of the tagged space and there is enough space after the tagged space.
+                        if (cur_tag->next != NULL && new_end_ptr == cur_tag->next->start) {
+                            merge_tag(cur_tag);
+                        } else {
+                            cur_tag->end = new_end_ptr;
+                        }
+
+                        *(size_t*)new_start_ptr = requested_size;
+                        return ptr;
+                    } else {
+                        // The memory allocator will have to move the memory.
+                        void* new_ptr = malloc(requested_size);
+                        if (new_ptr == NULL) return NULL;
+
+                        memcpy(new_ptr, ptr, *(size_t*)old_start_ptr);
+                        free(ptr);
+
+                        return new_ptr;
+                    }
+                }
+            }
+            return NULL;
+        }
+        prev_tag = cur_tag;
+        cur_tag = cur_tag->next;
+    }
+
+    return NULL;
+}
+
+// Frees the memory pointed towards by ptr. this function may silently fail in certain conditions. this will lead to  a memory leak unless it is tried again under correct conditions.
 void free(void* ptr) {
     // Find the start and end of the memory to free.
     void* start_ptr = ptr - sizeof(size_t);
@@ -247,7 +314,7 @@ void free(void* ptr) {
     // Loop through all tag to find in what tagged space the memory to free is.
     struct mem_tag* prev_tag = NULL;
     struct mem_tag* cur_tag = first_tag;
-    while (first_tag != NULL) {
+    while (cur_tag != NULL) {
         if (end_ptr <= cur_tag->end) {
             if (start_ptr >= cur_tag->start) {
                 if (start_ptr == cur_tag->start) {
@@ -326,23 +393,21 @@ void test_heap()
     if (a != NULL) *a = 0xAAAAAAAA;
     uint32_t* b = malloc(4);
     if (b != NULL) *b = 0xBBBBBBBB;
-    uint32_t* c = malloc(4);
+    uint32_t* c = calloc(3, 2);
     if (c != NULL) *c = 0xCCCCCCCC;
     print_heap();
     printf("\n");
     free(b);
     print_heap();
     printf("\n");
-    uint32_t* d = calloc(2,2);
+    a = realloc(a, 8);
+    if (a != NULL) a[1] = 0xDDDDDDDD;
     print_heap();
     printf("\n");
     free(c);
     print_heap();
     printf("\n");
     free(a);
-    print_heap();
-    printf("\n");
-    free(d);
     print_heap();
     printf("\n");
 }

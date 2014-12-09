@@ -7,7 +7,4 @@
 void main()
 {
     terminal_reset();
-
-    init_heap();
-    test_heap();
 }
