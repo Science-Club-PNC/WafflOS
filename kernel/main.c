@@ -3,6 +3,7 @@
 
 #include "terminal.h"
 #include "malloc.h"
+#include "interrupt.h"
 
 void main()
 {
