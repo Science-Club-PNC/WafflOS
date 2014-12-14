@@ -1,7 +1,10 @@
-#ifndef __register_h__
-#define __register_h__
+#ifndef _IOPORT_H
+#define _IOPORT_H
+
+#include <stdint.h>
 
 void outb(uint16_t port, uint8_t val);
 uint8_t inb(uint16_t port);
+void io_wait();
 
 #endif

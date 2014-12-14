@@ -2,6 +2,7 @@
 #define _INTERRUPT_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 enum IDT_gate_type {
@@ -12,7 +13,7 @@ enum IDT_gate_type {
     trap_gate_32      = 0xF
 };
 
-struct IDT_type_attr{
+struct IDT_type_attr {
     unsigned int gate_type : 4;
     unsigned int for_storage : 1;
     unsigned int privilege: 2;
@@ -88,6 +89,10 @@ inline bool get_IDT_descr_enabled(struct IDT_descr* descr)
     return descr->type_attr.enabled;
 }
 
+void init_IDT();
+
 struct IDT_descr* init_IDT_descr(struct IDT_descr* descr, uint32_t offset, uint16_t selector, enum IDT_gate_type gate_type, bool for_storage, uint8_t privilege, bool enabled);
+
+void set_IDT_descr(size_t interrupt, uint32_t offset, uint16_t selector, enum IDT_gate_type gate_type, bool for_storage, uint8_t privilege, bool enabled);
 
 #endif

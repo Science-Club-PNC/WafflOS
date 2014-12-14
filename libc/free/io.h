@@ -1,5 +1,5 @@
-#ifndef __io_h__
-#define __io_h__
+#ifndef _IO_H
+#define _IO_H
 
 int printf(char* format, ...);
 

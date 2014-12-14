@@ -1,0 +1,36 @@
+- DONE: Make space for the interrupt descriptor table
+    - simple array?
+        - should work
+    - size?
+        - a maximum needed is 256 times the interrupt descriptor struct size
+    - heap/stack?
+        - i don't think i will need to resize it midway. so the stack should suffice.
+    - interrupt descriptor struct?
+      " struct IDTDescr {
+        uint16_t offset_1; // offset bits 0..15
+        uint16_t selector; // a code segment selector in GDT or LDT
+        uint8_t zero;      // unused, set to 0
+        uint8_t type_attr; // type and attributes, see below
+        uint16_t offset_2; // offset bits 16..31
+        };
+      "
+
+- DONE: Tell the CPU where that space is (see GDT Tutorial: lidt works the very same way as lgdt)
+
+- DONE: Tell the PIC that you no longer want to use the BIOS defaults (see Programming the PIC chips)
+    - What is the PIC?
+        - Programmable Interrupt Controller
+        - what does it do?
+            - it manages hardware interrupts and send them to the appropriate system interrupt
+        - Note: APIC replaced PIC in modern systems.
+            - Are these compatible?
+            - Can we just write an normal PIC driver?
+                - I assume so
+        - what should the code look like? http://wiki.osdev.org/PIC#Common_Definitions
+
+- Write a couple of ISR handlers (see Interrupt Service Routines) for both IRQs and exceptions
+    - What are ISR handers?
+        - 
+- Put the addresses of the ISR handlers in the appropriate descriptors
+- Enable all supported interrupts in the IRQ mask (of the PIC)
+

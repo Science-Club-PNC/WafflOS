@@ -1,5 +1,5 @@
-#ifndef __terminal_h__
-#define __terminal_h__
+#ifndef _TERMINAL_H
+#define _TERMINAL_H
 
 enum vga_color {
     color_black,

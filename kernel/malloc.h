@@ -1,5 +1,5 @@
-#ifndef _malloc_h
-#define _malloc_h
+#ifndef _MALLOC_H
+#define _MALLOC_H
 
 #include <stddef.h>
 

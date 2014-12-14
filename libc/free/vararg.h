@@ -1,5 +1,5 @@
-#ifndef __vararg_h__
-#define __vararg_h__
+#ifndef _VARARG_H
+#define _VARARG_H
 
 typedef void** va_list;
 

@@ -1,9 +1,9 @@
+#include "terminal.h"
+#include "ioport.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
-#include "register.h"
-#include "terminal.h"
 
 uint16_t* vga_buffer = (uint16_t*)0xB8000;
 uint8_t terminal_color;
