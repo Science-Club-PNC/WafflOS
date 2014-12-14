@@ -32,10 +32,10 @@ wno: warnings :=
 wno: all
 
 .PHONY: assembly
-assembly: CFLAGS := $(CFLAGS) -I libc/free/
+assembly: CFLAGS := $(CFLAGS) -I kernel/include/ -I libc/free/
 assembly: $(test_assembly)
 
-kernel.img: CFLAGS := $(CFLAGS) -I libc/free/
+kernel.img: CFLAGS := $(CFLAGS) -I kernel/include/ -I libc/free/
 kernel.img: $(filter-out $(dir_object)/kernel/* $(dir_object)/libc/free/*, $(objects))
 	@echo "[$(CC)] Linking $@"
 	@$(LINK.o) -T kernel/linker.ld $(OUTPUT_OPTION) $^

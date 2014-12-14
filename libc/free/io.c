@@ -1,4 +1,4 @@
-#include <kernel/terminal.h>
+#include <terminal.h>
 
 #include "vararg.h"
 #include "string.h"

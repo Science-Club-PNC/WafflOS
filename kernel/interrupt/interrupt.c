@@ -1,4 +1,4 @@
-#include "interrupt.h"
+#include <interrupt.h>
 
 #define IDT_SIZE 256
 struct IDT_descr IDT[IDT_SIZE];  // The Interrupt Descriptor Table
