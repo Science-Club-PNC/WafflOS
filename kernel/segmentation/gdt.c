@@ -1,6 +1,7 @@
 #include <gdt.h>
 
-uint64_t GDT[5];
+#define GDT_SIZE 5
+uint64_t GDT[GDT_SIZE];
 
 uint64_t create_descriptor(uint32_t base, uint32_t limit, uint16_t flag)
 {
@@ -22,6 +23,19 @@ uint64_t create_descriptor(uint32_t base, uint32_t limit, uint16_t flag)
     return descriptor;
 }
 
+inline void load_GDT(void* base, uint16_t size)
+{
+    struct
+    {
+        uint16_t length;
+        uint32_t base;
+    } __attribute__((packed)) GDTR;
+
+    GDTR.length = size;
+    GDTR.base = (uint32_t) base;
+    __asm__("lgdt (%0)" : : "r"(&GDTR));
+}
+
 void init_GDT()
 {
     // This basicly disables the use of the GDT.
@@ -31,4 +45,6 @@ void init_GDT()
     GDT[3] = create_descriptor(0, 0x000FFFFF, (GDT_CODE_PL3));  // Everything is userspace code.
     GDT[4] = create_descriptor(0, 0x000FFFFF, (GDT_DATA_PL3));  // Everything is userspace data.
     // Todo: add TSS descriptor
+    
+    load_GDT(&GDT, GDT_SIZE*sizeof(uint64_t));
 }
