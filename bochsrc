@@ -1,6 +1,6 @@
 # Use WxWidgets as GUI
-#config_interface: wx
-#display_library: wx
+config_interface: wx
+display_library: wx
 # This can be buggy. You can uncomment this and use command line debugging instead.
 
 # Mount the CD
