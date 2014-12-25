@@ -3,6 +3,7 @@ rwildcard = $(foreach d, $(wildcard $1*), $(filter $(subst *, %, $2), $d) $(call
 CC := i686-elf-gcc
 AS := i686-elf-as
 QEMU := qemu-system-i386
+BOCHS := bochs
 
 warnings := -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter -Wno-unused-but-set-variable
 CFLAGS = -std=c11 -O2 $(warnings) -ffreestanding -I .
@@ -20,20 +21,28 @@ all: kernel.img
 
 .PHONY: clean
 clean:
-	@rm -rf $(dir_object) $(dir_test_assembly) kernel.img
+	@rm -rf $(dir_object) $(dir_test_assembly) kernel.img cdroot/boot/kernel.img wafflos.iso
 	@echo "Clean!"
 
 .PHONY: run
 run: kernel.img
 	@$(QEMU) -kernel $<
 
+.PHONY: bochs
+bochs: wafflos.iso
+	@$(BOCHS) -f bochsrc
+
 .PHONY: wno
-wno: warnings := 
+wno: warnings :=
 wno: all
 
 .PHONY: assembly
 assembly: CFLAGS := $(CFLAGS) -I kernel/include/ -I libc/free/
 assembly: $(test_assembly)
+
+wafflos.iso: kernel.img
+	@cp kernel.img cdroot/boot/kernel.img
+	@grub-mkrescue -o wafflos.iso cdroot
 
 kernel.img: CFLAGS := $(CFLAGS) -I kernel/include/ -I libc/free/
 kernel.img: $(filter-out $(dir_object)/kernel/* $(dir_object)/libc/free/*, $(objects))

@@ -16,6 +16,6 @@ void main()
     //init_IDT();
     //init_PIC();
     //init_keyboard();
-    printf("> Running \n");
+    printf(">> Running \n");
     //__asm__("INT $0x21");
 }
