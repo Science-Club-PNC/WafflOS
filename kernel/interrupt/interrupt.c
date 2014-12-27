@@ -14,7 +14,6 @@ inline void load_IDT(void* base, uint16_t size)
     IDTR.length = size;
     IDTR.base = (uint32_t) base;
     __asm__("lidt (%0)" : : "r"(&IDTR));
-
 }
 
 struct IDT_descr* init_IDT_descr(struct IDT_descr* descr, uint32_t offset, uint16_t selector, enum IDT_gate_type gate_type, bool for_storage, uint8_t privilege, bool enabled)
