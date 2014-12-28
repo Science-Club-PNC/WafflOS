@@ -56,7 +56,36 @@ void term_clear()
 
 void writechar(char c)
 {
-    set_entry(pos_y * width + pos_x++, c);
+    switch (c) {
+        case '\n':
+            goto newline;
+        case '\r':
+            pos_x = 0;
+            return;
+    }
+
+    set_entry(pos_y * width + pos_x, c);
+
+    if (++pos_x >= width) {
+    newline:
+        pos_x = 0;
+
+        if (++pos_y >= height) {
+            static const int total = width * height;
+
+            // Move every entry a line up
+            for (int pos = width; pos < total; pos++) {
+                buffer[pos - width] = buffer[pos];
+            }
+
+            // Clear the last line
+            for (int pos = width * (height - 1); pos < total; pos++) {
+                set_entry(pos, 0);
+            }
+
+            pos_y = height - 1;
+        }
+    }
 }
 
 void writestring(char* str)
