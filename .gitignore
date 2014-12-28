@@ -1,0 +1,7 @@
+# Editor files
+~*
+*.swp
+
+# Output files
+obj
+kernel.img
