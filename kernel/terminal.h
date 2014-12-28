@@ -19,10 +19,15 @@ enum vga_color {
     light_brown,
     white,
 };
+#define DEFAULT_FG_COLOR white
+#define DEFAULT_BG_COLOR black
 
 void set_color(enum vga_color fg, enum vga_color bg);
+void set_fg_color(enum vga_color fg);
+void set_bg_color(enum vga_color bg);
 void update_cursor();
 void term_clear();
+void writechar(char c);
 void writestring(char* str);
 
 #endif

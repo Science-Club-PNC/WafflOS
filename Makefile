@@ -39,8 +39,8 @@ all: $(kernel)
 
 .PHONY: clean
 clean:
-	rm -rf $(kernel) $(dir_object)
+	@rm -rf $(kernel) $(dir_object)
 
 .PHONY: qemu
 qemu: $(kernel)
-	$(QEMU) -kernel $(kernel)
+	@$(QEMU) -kernel $(kernel)

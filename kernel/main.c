@@ -1,9 +1,10 @@
+#include <io.h>
 #include "terminal.h"
+
+#define OSNAME "WafflOS"
 
 void main()
 {
     term_clear();
-    set_color(green, black);
-    writestring("Welcome to WafflOS!");
-    update_cursor();
+    printf("$e&4Welcome%r to &2%s&f!", OSNAME);
 }
