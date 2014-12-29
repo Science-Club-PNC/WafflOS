@@ -5,6 +5,7 @@
 
 #include "io.h"
 
+#define ERRCHAR '?'
 #define MAXINT 10
 
 int printf(char *str, ...)
@@ -26,39 +27,39 @@ int printf(char *str, ...)
                 case 'i':
                     writestring(int_to_string(va_arg(args, int), i, MAXINT));
                     break;
-                case 'r':
-                    set_color(DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
-                    break;
                 case '%':
                     writechar('%');
                     break;
                 default:
-                    writechar('?');
+                    writechar(ERRCHAR);
             }
-        } else if (str[pos] == '&' || str[pos] == '$') {
-            // http://minecraft.gamepedia.com/Formatting_codes#Color_codes
-            char c = str[pos];
-            int i = str[++pos];
+        } else if (str[pos] == '$') {
+            char c = str[++pos];
+            void (*color_function)(enum vga_color) = set_fg_color;
 
-            if (i == c) {
-                writechar(c);
-            } else if (i >= 48 && i <= 57) {
-                if (c == '&') {
-                    set_fg_color(i - 48);
-                } else if (c == '$') {
-                    set_bg_color(i - 48);
+            if (c == '$') {
+                writechar('$');
+            } else if (c == 'R') {
+                set_color(DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+            } else {
+                if (c == '!') {
+                    color_function = set_bg_color;
+                    c = str[++pos];
                 }
-            } else if (i >= 97 && i <= 102) {
-                if (c == '&') {
-                    set_fg_color(i - 87);
-                } else if (c == '$') {
-                    set_bg_color(i - 87);
-                }
-            } else if (i == 'r') {
-                if (c == '&') {
-                    set_fg_color(DEFAULT_FG_COLOR);
-                } else if (c == '$') {
-                    set_bg_color(DEFAULT_BG_COLOR);
+                if (c >= '0' && c <= '9') {
+                    color_function(c - '0');
+                } else if (c >= 'a' && c <= 'f') {
+                    color_function(c - 'a' + 10);
+                } else if (c >= 'A' && c <= 'F') {
+                    color_function(c - 'A' + 10);
+                } else if (c == 'r') {
+                    if (color_function == set_fg_color) {
+                        set_fg_color(DEFAULT_FG_COLOR);
+                    } else {
+                        set_bg_color(DEFAULT_BG_COLOR);
+                    }
+                } else {
+                    writechar(ERRCHAR);
                 }
             }
         } else {

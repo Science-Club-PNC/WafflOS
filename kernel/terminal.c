@@ -19,12 +19,12 @@ void set_color(enum vga_color fg, enum vga_color bg)
 
 void set_fg_color(enum vga_color fg)
 {
-    color = fg | (color & 240 /* 240 = 11110000 */);
+    color = fg | (color & 0xF0);
 }
 
 void set_bg_color(enum vga_color bg)
 {
-    color = (color & 15 /* 15 = 1111 */) | bg << 4;
+    color = (color & 0x0F) | bg << 4;
 }
 
 void set_entry(int pos, char c)
