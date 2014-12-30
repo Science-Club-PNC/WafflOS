@@ -16,7 +16,7 @@ struct mem_tag{
 
 // Add an array to the stack to act as heap.
 // TODO: Create the heap dynamicly relative to the available size.
-#define heap_size 0x40//100000  // you might want to change this value to something like 0x20 for debuging
+#define heap_size 0x100000  // you might want to change this value to something like 0x20 for debuging
 uint8_t heap_array[heap_size];
 
 // Define pointers to the start and endof the heap (this area will shrink when adding memory tags). Note that heap_end is just outside of the heap.
