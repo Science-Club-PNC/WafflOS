@@ -27,17 +27,10 @@ char* string_reverse(char* target, size_t len)
     return target;
 }
 
-//TODO: Don't depend on len
-char* to_dec_string(void b, char* target, size_t len, bool sign)
+char* long_to_dec_string(long a, char* target, size_t len)
 {
-    if (sign) {
-        long a = b;
-    } else {
-        unsigned long a = b;
-    }
-
     bool negative_input = false;
-    if (a < 0 && sign) {
+    if (a<0) {
         a = -a;
         negative_input = true;
     }
@@ -55,6 +48,23 @@ char* to_dec_string(void b, char* target, size_t len, bool sign)
     if (negative_input && (i < len - 1)) {
         target[i] = '-';
         i++;
+    }
+    target[i] = '\0';
+
+    return string_reverse(target, i);
+}
+
+char* ulong_to_dec_string(unsigned long a, char* target, size_t len)
+{
+    size_t i;
+    for (i = 0; i < len - 1; i++) {
+        int extract = a % 10;
+        target[i] = (char)extract + '0';
+        a = (a - extract) / 10;
+        if (a == 0) {
+            i++;
+            break;
+        }
     }
     target[i] = '\0';
 
