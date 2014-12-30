@@ -4,9 +4,10 @@ rwildcard = $(foreach d, $(wildcard $1*), $(filter $(subst *, %, $2), $d) $(call
 CC := i686-elf-gcc
 AS := i686-elf-as
 QEMU := qemu-system-i386
+GDB := gdb
 
 # Flags
-CFLAGS := -std=c11 -O2 -Wall -Wextra -I . -I libc/free/ -I libc/hosted/
+CFLAGS := -g -std=c11 -O2 -Wall -Wextra -I . -I libc/free/ -I libc/hosted/
 LDFLAGS := -O2
 
 # Output files
@@ -44,3 +45,8 @@ clean:
 .PHONY: qemu
 qemu: $(kernel)
 	@$(QEMU) -kernel $(kernel)
+
+.PHONY: gdb
+gdb: $(kernel)
+	@$(QEMU) -S -s -kernel $(kernel) &
+	@$(GDB)

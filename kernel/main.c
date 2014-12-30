@@ -20,9 +20,13 @@ void fail() {
 void main()
 {
     term_clear();
-    init_heap();
 
     printf("\n$!f$0Welcome$R to $!2"OSNAME"$!r!\n\n");
+
+    load("Initializing heap");
+    init_heap();
+    ok();
+
     load("Loading whatever");
     // Do stuff
     ok();

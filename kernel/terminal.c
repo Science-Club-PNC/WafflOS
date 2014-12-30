@@ -10,26 +10,34 @@ static const int width = 80;
 static const int height = 25;
 int pos_x = 0;
 int pos_y = 0;
-uint8_t color;
+
+union {
+    struct {
+        uint8_t fg: 4;
+        uint8_t bg: 4;
+    };
+    uint8_t value;
+} color;
 
 void set_color(enum vga_color fg, enum vga_color bg)
 {
-    color = fg | bg << 4;
+    color.fg = fg;
+    color.bg = bg;
 }
 
 void set_fg_color(enum vga_color fg)
 {
-    color = fg | (color & 0xF0);
+    color.fg = fg;
 }
 
 void set_bg_color(enum vga_color bg)
 {
-    color = (color & 0x0F) | bg << 4;
+    color.bg = bg;
 }
 
 void set_entry(int pos, char c)
 {
-    buffer[pos] = c | color << 8;
+    buffer[pos] = c | color.value << 8;
 }
 
 void update_cursor()
