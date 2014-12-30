@@ -6,7 +6,7 @@
 #include "io.h"
 
 #define ERRCHAR '?'
-#define MAXINT 10
+#define MAXINT 12
 
 int printf(char *str, ...)
 {
@@ -26,6 +26,10 @@ int printf(char *str, ...)
                     break;
                 case 'i':
                     writestring(int_to_dec_string(va_arg(args, int), i, MAXINT));
+                    break;
+                case 'x':
+                case 'X':
+                    writestring(int_to_hex_string(va_arg(args, int), i, MAXINT));
                     break;
                 case '%':
                     writechar('%');

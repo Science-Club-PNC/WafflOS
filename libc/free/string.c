@@ -70,3 +70,68 @@ char* ulong_to_dec_string(unsigned long a, char* target, size_t len)
 
     return string_reverse(target, i);
 }
+
+char* byte_to_hex_string(uint8_t a, char* target, size_t len)
+{
+    if (len < 3) return NULL;
+
+    char cur_heximal = (a >> 4) & 0x0F;
+    target[0] = (cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0';
+    cur_heximal = a & 0x0F;
+    target[1] = (cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0';
+    target[2] = '\0';
+
+    return target;
+}
+
+char* char_to_hex_string(unsigned char a, char* target, size_t len)
+{
+    if (len <= sizeof(a)*2) return NULL;
+
+    const uint8_t* a_ptr = (const uint8_t*)&a + sizeof(a);
+
+    for (size_t i = 0; i < sizeof(a); i++) {
+        byte_to_hex_string(*(a_ptr - i - 1), target + i*2, 3);
+    }
+
+    return target;
+}
+
+char* short_to_hex_string(unsigned short a, char* target, size_t len)
+{
+    if (len <= sizeof(a)*2) return NULL;
+
+    const uint8_t* a_ptr = (const uint8_t*)&a + sizeof(a);
+
+    for (size_t i = 0; i < sizeof(a); i++) {
+        byte_to_hex_string(*(a_ptr - i - 1), target + i*2, 3);
+    }
+
+    return target;
+}
+
+char* int_to_hex_string(unsigned int a, char* target, size_t len)
+{
+    if (len <= sizeof(a)*2) return NULL;
+
+    const uint8_t* a_ptr = (const uint8_t*)&a + sizeof(a);
+
+    for (size_t i = 0; i < sizeof(a); i++) {
+        byte_to_hex_string(*(a_ptr - i - 1), target + i*2, 3);
+    }
+
+    return target;
+}
+
+char* long_to_hex_string(unsigned long a, char* target, size_t len)
+{
+    if (len <= sizeof(a)*2) return NULL;
+
+    const uint8_t* a_ptr = (const uint8_t*)&a + sizeof(a);
+
+    for (size_t i = 0; i < sizeof(a); i++) {
+        byte_to_hex_string(*(a_ptr - i - 1), target + i*2, 3);
+    }
+
+    return target;
+}
