@@ -20,13 +20,13 @@
 #endif
 
 // Log an error with the file name and line number.
-#define log_err(M, ...) printf("$R[$cERRO$r] $7(%s:%i)$r " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define log_err(M, ...) printf("$!r$c   ERROR$r: $7(%s:%i)$r " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
 // Log a warning with the file name and line number.
-#define log_warn(M, ...) printf("$R[$dWARN$r] $7(%s:%i)$r " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define log_warn(M, ...) printf("$!r$d WARNING$r: $7(%s:%i)$r " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
 // Log info with the file name and line number.
-#define log_info(M, ...) printf("$R[$9INFO$r] $7(%s:%i)$r " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define log_info(M, ...) printf("$!r$9    INFO$r: $7(%s:%i)$r " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
 // Log an error and jump to 'error' if A isn't true.
 #define check(A, M, ...) if(!(A)) { log_err(M, ##__VA_ARGS__); errno=0; goto error; }
