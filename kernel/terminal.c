@@ -65,6 +65,51 @@ void newline()
     }
 }
 
+void backspace()
+{
+    if (pos_x == 0) {
+        if (pos_y == 0) {
+            return;
+        } else {
+            pos_y--;
+            pos_x = width - 1;
+            int pos = pos_y * width + pos_x;
+            if (get_char(pos)) {
+                set_entry(pos, 0);
+            } else {
+                do {
+                    pos_x--;
+                    pos--;
+                    if (get_char(pos)) {
+                        pos_x++;
+                        break;
+                    }
+                } while (pos_x > 0);
+            }
+        }
+    } else {
+        int pos = pos_y * width + pos_x;
+        do {
+            pos_x--;
+            pos--;
+            if (get_char(pos)) {
+                set_entry(pos, 0);
+                break;
+            }
+        } while (pos_x > 0);
+    }
+    return;
+}
+
+void putchar(char c)
+{
+    set_entry(pos_y * width + pos_x, c);
+
+    if (++pos_x >= width) {
+        newline();
+    }
+}
+
 void writechar(char c)
 {
     switch (c) {
@@ -75,50 +120,17 @@ void writechar(char c)
             pos_x = 0;
             return;
         case '\t':
-            do {
-                writechar(' ');
-            } while (pos_x % 4 != 0);
-            return;
-        case '\b':
-            if (pos_x == 0) {
-                if (pos_y == 0) {
-                    return;
-                } else {
-                    pos_y--;
-                    pos_x = width - 1;
-                    int pos = pos_y * width + pos_x;
-                    if (get_char(pos)) {
-                        set_entry(pos, 0);
-                    } else {
-                        do {
-                            pos_x--;
-                            pos--;
-                            if (get_char(pos)) {
-                                pos_x++;
-                                break;
-                            }
-                        } while (pos_x > 0);
-                    }
-                }
-            } else {
-                int pos = pos_y * width + pos_x;
-                do {
-                    pos_x--;
-                    pos--;
-                    if (get_char(pos)) {
-                        set_entry(pos, 0);
-                        break;
-                    }
-                } while (pos_x > 0);
+            putchar(' ');
+            while (pos_x % 4 != 0) {
+                putchar(0);
             }
             return;
+        case '\b':
+            backspace();
+            return;
     }
 
-    set_entry(pos_y * width + pos_x, c);
-
-    if (++pos_x >= width) {
-        newline();
-    }
+    putchar(c);
 }
 
 void writestring(char* str)

@@ -34,6 +34,9 @@ union {
 
 void update_cursor();
 void term_clear();
+void backspace();
+void newline();
+void putchar(char c);
 void writechar(char c);
 void writestring(char* str);
 
