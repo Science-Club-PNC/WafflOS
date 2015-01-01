@@ -11,33 +11,9 @@ static const int height = 25;
 int pos_x = 0;
 int pos_y = 0;
 
-union {
-    struct {
-        uint8_t fg: 4;
-        uint8_t bg: 4;
-    };
-    uint8_t value;
-} color;
-
-void set_color(enum vga_color fg, enum vga_color bg)
-{
-    color.fg = fg;
-    color.bg = bg;
-}
-
-void set_fg_color(enum vga_color fg)
-{
-    color.fg = fg;
-}
-
-void set_bg_color(enum vga_color bg)
-{
-    color.bg = bg;
-}
-
 void set_entry(int pos, char c)
 {
-    buffer[pos] = c | color.value << 8;
+    buffer[pos] = c | vga_color.value << 8;
 }
 
 void update_cursor()
@@ -54,11 +30,33 @@ void term_clear()
     pos_x = 0;
     pos_y = 0;
     update_cursor();
-    set_color(DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+    vga_color.fg = DEFAULT_FG_COLOR;
+    vga_color.bg = DEFAULT_BG_COLOR;
 
     static const int total = width * height;
     for (int pos = 0; pos < total; pos++) {
         set_entry(pos, 0);
+    }
+}
+
+void newline()
+{
+    pos_x = 0;
+
+    if (++pos_y >= height) {
+        static const int total = width * height;
+
+        // Move every entry a line up
+        for (int pos = width; pos < total; pos++) {
+            buffer[pos - width] = buffer[pos];
+        }
+
+        // Clear the last line
+        for (int pos = width * (height - 1); pos < total; pos++) {
+            set_entry(pos, 0);
+        }
+
+        pos_y = height - 1;
     }
 }
 
@@ -76,23 +74,7 @@ void writechar(char c)
 
     if (++pos_x >= width) {
     newline:
-        pos_x = 0;
-
-        if (++pos_y >= height) {
-            static const int total = width * height;
-
-            // Move every entry a line up
-            for (int pos = width; pos < total; pos++) {
-                buffer[pos - width] = buffer[pos];
-            }
-
-            // Clear the last line
-            for (int pos = width * (height - 1); pos < total; pos++) {
-                set_entry(pos, 0);
-            }
-
-            pos_y = height - 1;
-        }
+        newline();
     }
 }
 

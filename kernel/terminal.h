@@ -1,6 +1,8 @@
 #ifndef __terminal_h__
 #define __terminal_h__
 
+#include <stdint.h>
+
 enum vga_color {
     black,
     blue,
@@ -22,9 +24,14 @@ enum vga_color {
 #define DEFAULT_FG_COLOR white
 #define DEFAULT_BG_COLOR black
 
-void set_color(enum vga_color fg, enum vga_color bg);
-void set_fg_color(enum vga_color fg);
-void set_bg_color(enum vga_color bg);
+union {
+    struct {
+        enum vga_color fg: 4;
+        enum vga_color bg: 4;
+    };
+    uint8_t value;
+} vga_color;
+
 void update_cursor();
 void term_clear();
 void writechar(char c);
