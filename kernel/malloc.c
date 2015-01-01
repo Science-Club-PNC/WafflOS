@@ -347,6 +347,8 @@ void free(void* ptr) {
 void print_heap()
 {
     struct mem_tag* cur_tag = first_tag;
+
+    char byte_string[3] = { 0 };
     // Loop through all bytes in the heap and the tag space, (assuming the tag space comes directly after the heap.)
     for (uint8_t* ptr = heap_start; (void*)ptr < (void*)(tag_space_end); ptr++) {
         // Set background color to represent the memory usage.
@@ -354,35 +356,35 @@ void print_heap()
             check_memory_is_tagged:
             if (cur_tag == NULL || (void*)ptr < cur_tag->start) {
                 // The memory is free
-                set_color(white, green);
+                printf("$f$!2");
             } else if ((void*)ptr >= cur_tag->end) {
                 cur_tag = cur_tag->next;
                 goto check_memory_is_tagged;
             } else {
                 // The Memory is used
-                set_color(white, red);
+                printf("$f$!4");
             }
         } else {
             // The memory is reserved for tags
-            set_color(white, light_blue);
+            printf("$f$!9");
         }
         
         // Write two heximal chars representing the current byte.
         uint8_t cur_heximal = (*ptr & 0x0F);
-        writechar((cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0');
+        byte_string[0] = (cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0';
         cur_heximal = ((*ptr >> 4) & 0x0F);
-        writechar((cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0');
+        byte_string[1] = (cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0';
+        printf(byte_string);
+
         // Write a space or enter once in a while to keep the output readable.
         if (((void*)ptr - heap_start) % 32 == 31) {
-            set_color(DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
-            writechar('\n');
+            printf("$R\n");
         } else if (((void*)ptr - heap_start) % 4 == 3) {
-            set_color(DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
-            writechar(' ');
+            printf("$R ");
         }
     }
     // Reset output color.
-    set_color(DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+    printf("$R");
 }
 
 // A small test function to test if the memory allocator behaves correctly.
