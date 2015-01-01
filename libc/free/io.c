@@ -1,9 +1,12 @@
 #include <stddef.h>
+#include <stdbool.h>
 #include <kernel/terminal.h>
 #include "string.h"
 #include "vararg.h"
 
 #include "io.h"
+
+#define set_color(bg, value) if (bg) { vga_color.bg = value; } else { vga_color.fg = value; }
 
 #define ERRCHAR '?'
 #define MAXINT 12
@@ -40,28 +43,29 @@ int printf(char *str, ...)
             }
         } else if (str[pos] == '$') {
             char c = str[++pos];
-            void (*color_function)(enum vga_color) = set_fg_color;
+            bool bg = false;
 
             if (c == '$') {
                 writechar('$');
             } else if (c == 'R') {
-                set_color(DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+                vga_color.fg = DEFAULT_FG_COLOR;
+                vga_color.bg = DEFAULT_BG_COLOR;
             } else {
                 if (c == '!') {
-                    color_function = set_bg_color;
+                    bg = true;
                     c = str[++pos];
                 }
                 if (c >= '0' && c <= '9') {
-                    color_function(c - '0');
+                    set_color(bg, c - '0');
                 } else if (c >= 'a' && c <= 'f') {
-                    color_function(c - 'a' + 10);
+                    set_color(bg, c - 'a' + 10);
                 } else if (c >= 'A' && c <= 'F') {
-                    color_function(c - 'A' + 10);
+                    set_color(bg, c - 'A' + 10);
                 } else if (c == 'r') {
-                    if (color_function == set_fg_color) {
-                        set_fg_color(DEFAULT_FG_COLOR);
+                    if (bg) {
+                        vga_color.bg = DEFAULT_BG_COLOR;
                     } else {
-                        set_bg_color(DEFAULT_BG_COLOR);
+                        vga_color.fg = DEFAULT_FG_COLOR;
                     }
                 } else {
                     writechar(ERRCHAR);
