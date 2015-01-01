@@ -64,7 +64,8 @@ void writechar(char c)
 {
     switch (c) {
         case '\n':
-            goto newline;
+            newline();
+            return;
         case '\r':
             pos_x = 0;
             return;
@@ -73,7 +74,6 @@ void writechar(char c)
     set_entry(pos_y * width + pos_x, c);
 
     if (++pos_x >= width) {
-    newline:
         newline();
     }
 }
