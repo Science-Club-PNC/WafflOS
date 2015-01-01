@@ -40,6 +40,11 @@ void set_entry(int pos, char c)
     buffer[pos] = c | color.value << 8;
 }
 
+char get_char(int pos)
+{
+    return (char)buffer[pos];
+}
+
 void update_cursor()
 {
     int pos = pos_y * width + pos_x;
@@ -69,6 +74,44 @@ void writechar(char c)
             goto newline;
         case '\r':
             pos_x = 0;
+            return;
+        case '\t':
+            do {
+                writechar(' ');
+            } while (pos_x % 4 != 0);
+            return;
+        case '\b':
+            if (pos_x == 0) {
+                if (pos_y == 0) {
+                    return;
+                } else {
+                    pos_y--;
+                    pos_x = width - 1;
+                    int pos = pos_y * width + pos_x;
+                    if (get_char(pos)) {
+                        set_entry(pos, 0);
+                    } else {
+                        do {
+                            pos_x--;
+                            pos--;
+                            if (get_char(pos)) {
+                                pos_x++;
+                                break;
+                            }
+                        } while (pos_x > 0);
+                    }
+                }
+            } else {
+                int pos = pos_y * width + pos_x;
+                do {
+                    pos_x--;
+                    pos--;
+                    if (get_char(pos)) {
+                        set_entry(pos, 0);
+                        break;
+                    }
+                } while (pos_x > 0);
+            }
             return;
     }
 

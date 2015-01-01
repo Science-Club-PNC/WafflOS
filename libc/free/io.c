@@ -24,6 +24,7 @@ int printf(char *str, ...)
                 case 'c':
                     writechar(va_arg(args, char));
                     break;
+                case 'd':
                 case 'i':
                     writestring(int_to_dec_string(va_arg(args, int), i, MAXINT));
                     break;
