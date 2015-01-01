@@ -2,6 +2,7 @@
 #define __string_h__
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <limits.h>
 
@@ -16,9 +17,17 @@ inline char* int_to_dec_string(int a, char* target, size_t len) { return long_to
 
 inline char* ushort_to_dec_string(unsigned short a, char* target, size_t len) { return ulong_to_dec_string(a, target, len); }
 inline char* uint_to_dec_string(unsigned int a, char* target, size_t len) { return ulong_to_dec_string(a, target, len); }
-
 #if CHAR_MIN == 0  // if the type char is unsigned
     inline char* char_to_dec_string(char a, char* target, size_t len) { return ulong_to_dec_string(a, target, len); }
+#else  // if the type char is signed
+    inline char* char_to_dec_string(unsigned char a, char* target, size_t len) { return long_to_dec_string(a, target, len); }
 #endif
+
+char* byte_to_hex_string(uint8_t a, char* target, size_t len);
+
+char* char_to_hex_string(unsigned char a, char* target, size_t len);
+char* short_to_hex_string(unsigned short a, char* target, size_t len);
+char* int_to_hex_string(unsigned int a, char* target, size_t len);
+char* long_to_hex_string(unsigned long a, char* target, size_t len);
 
 #endif

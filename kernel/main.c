@@ -1,27 +1,26 @@
+#include <base.h>
 #include <io.h>
 
 #include "terminal.h"
 #include "malloc.h"
-
-#define OSNAME "WafflOS"
 
 void load(char *str) {
     printf("[$eBUSY$r] %s", str);
 }
 
 void ok() {
-    printf("\r[ $2OK$r ] \n");
+    printf("\r[ $aOK$r ] \n");
 }
 
 void fail() {
-    printf("\r[$4FAIL$r] \n");
+    printf("\r[$cFAIL$r] \n");
 }
 
 void main()
 {
     term_clear();
 
-    printf("\n$!f$0Welcome$R to $!2"OSNAME"$!r!\n\n");
+    printf("\n$!f$0Welcome$R to $!2"OSNAME"$!r version "OSVERSION"!\n\n");
 
     load("Initializing heap");
     init_heap();
@@ -36,6 +35,9 @@ void main()
     printf("\n$R$0 0 $1 1 $2 2 $3 3 $4 4 $5 5 $6 6 $7 7 $8 8 $9 9 $a a $b b $c c $d d $e e $f f ");
     printf("\n$R$!0 0 $!1 1 $!2 2 $!3 3 $!4 4 $!5 5 $!6 6 $!7 7 $!8 8 $!9 9 $!a a $!b b $!c c $!d d $!e e $!f f ");
     printf("$R\n\n");
+    log_err("WE FAILED");
+    log_warn("is this a problem?");
+    log_info("worthless info! :D");
     load("Loading something forever");
     printf("\n\n");
 }
