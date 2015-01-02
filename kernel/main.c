@@ -3,6 +3,7 @@
 
 #include "terminal.h"
 #include "malloc.h"
+#include "descriptor/gdt.h"
 
 void load(char *str) {
     printf("[$eBUSY$r] %s", str);
@@ -25,6 +26,12 @@ void main()
     load("Initializing heap");
     init_heap();
     ok();
+
+    load("Initializing GDT");
+    init_gdt();
+    ok();
+
+    printf("\n\nRest of this is random stuff:\n");
 
     load("Loading whatever");
     // Do stuff
