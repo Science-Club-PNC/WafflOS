@@ -7,6 +7,8 @@
 #include <limits.h>
 
 size_t strlen(char* str);
+char* to_uppercase(char* str, size_t len);
+char* to_lowercase(char* str, size_t len);
 char* string_reverse(char* target, size_t len);
 
 char* long_to_dec_string(long a, char* target, size_t len);
@@ -29,5 +31,7 @@ char* char_to_hex_string(unsigned char a, char* target, size_t len);
 char* short_to_hex_string(unsigned short a, char* target, size_t len);
 char* int_to_hex_string(unsigned int a, char* target, size_t len);
 char* long_to_hex_string(unsigned long a, char* target, size_t len);
+
+int dec_string_to_int(const char* source, size_t len);
 
 #endif

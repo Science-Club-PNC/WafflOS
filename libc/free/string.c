@@ -11,6 +11,28 @@ size_t strlen(char* str)
     return pos - str;
 }
 
+char* to_uppercase(char* str, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        if (str[i] >= 'a' && str[i] <= 'z') {
+            str[i] = str[i] - 'a' + 'A';
+        } else if (str[i] == '\0') {
+            break;
+        }
+    }
+    return str;
+}
+
+char* to_lowercase(char* str, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        if (str[i] >= 'A' && str[i] <= 'Z') {
+            str[i] = str[i] - 'A' + 'a';
+        } else if (str[i] == '\0') {
+            break;
+        }
+    }
+    return str;
+}
+
 char* string_reverse(char* target, size_t len)
 {
     char* i = target;
@@ -76,9 +98,9 @@ char* byte_to_hex_string(uint8_t a, char* target, size_t len)
     if (len < 3) return NULL;
 
     char cur_heximal = (a >> 4) & 0x0F;
-    target[0] = (cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0';
+    target[0] = (cur_heximal > 9) ? cur_heximal - 10 + 'a' : cur_heximal + '0';
     cur_heximal = a & 0x0F;
-    target[1] = (cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0';
+    target[1] = (cur_heximal > 9) ? cur_heximal - 10 + 'a' : cur_heximal + '0';
     target[2] = '\0';
 
     return target;
@@ -135,3 +157,33 @@ char* long_to_hex_string(unsigned long a, char* target, size_t len)
 
     return target;
 }
+
+int dec_string_to_int(const char* source, size_t len) {
+    if (len == 0) return 0;
+
+    bool output_is_negative = false;
+    int a = 0;
+    int i = 0;
+
+    if (source[0] == '-') {
+        output_is_negative = true;
+        i++;
+    } else if (source[0] == '+') {
+        i++;
+    }
+    while (i<len) {
+        char c = source[i];
+        if (c >= '0' && c <= '9') {
+            a *= 10;
+            a += c - '0';
+        } else {
+            break;
+        }
+        i++;
+    }
+
+    if (output_is_negative) a = -a;
+
+    return a;
+}
+
