@@ -40,17 +40,4 @@ void main()
     log_info("worthless info! :D");
     load("Loading something forever");
     printf("\n\n");
-
-    printf("printf tests:\n");
-    printf("%12x,",0x12AB);
-    printf("%#12x,",0x1234ABCD);
-    printf("%0#12X,",0x1234ABCD);
-    printf("%#12X\n",0x1234ABCD);
-    printf("%012i,",123456);
-    printf("%012i,",-123456);
-    printf("%0+12i,",123456);
-    printf("%0 12i\n",123456);
-    printf("%12s,","string");
-    printf("%-12s,\n","string");
-    printf("%#12hhx,%#12hx,%#12x, %#12lx\n",'\4',(short)2,3,4L);
 }

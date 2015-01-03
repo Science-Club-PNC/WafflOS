@@ -238,7 +238,7 @@ const char* get_format_output(const char* c, struct format* format, va_list* arg
             format->specifier_type = text;
 
             switch(format->data_size) {
-                case 0:
+                    case 0:
                     format->output_string_ptr[0] = va_arg(*args, int);
                     break;
                 default:
@@ -253,6 +253,7 @@ const char* get_format_output(const char* c, struct format* format, va_list* arg
             format->specifier_type = decimal;
 
             switch(format->data_size) {
+                case -2:
                 case -1:
                     format->output_string_ptr = short_to_dec_string(va_arg(*args, int), format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
@@ -270,6 +271,30 @@ const char* get_format_output(const char* c, struct format* format, va_list* arg
                 format->output_prefix_ptr[0] = '-';
                 format->output_string_ptr++;
             } else if (format->sign_fill_in) {
+                format->output_prefix_ptr[0] = format->sign_fill_in;
+            }
+            break;
+
+        case 'u':
+            // Unsigned decimal integer
+            format->specifier_type = decimal;
+
+            switch(format->data_size) {
+                case -2:
+                case -1:
+                    format->output_string_ptr = ushort_to_dec_string(va_arg(*args, unsigned int), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    break;
+                case 0:
+                    format->output_string_ptr = uint_to_dec_string(va_arg(*args, unsigned int), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    break;
+                case 1:
+                    format->output_string_ptr = ulong_to_dec_string(va_arg(*args, unsigned long), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    break;
+                default:
+                    goto error;
+            }
+
+            if (format->sign_fill_in) {
                 format->output_prefix_ptr[0] = format->sign_fill_in;
             }
             break;
