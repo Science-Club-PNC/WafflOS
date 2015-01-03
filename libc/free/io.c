@@ -238,7 +238,7 @@ const char* get_format_output(const char* c, struct format* format, va_list* arg
             format->specifier_type = text;
 
             switch(format->data_size) {
-                    case 0:
+                case 0:
                     format->output_string_ptr[0] = va_arg(*args, int);
                     break;
                 default:
