@@ -1,0 +1,211 @@
+#include <stddef.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "terminal.h"
+#include "vga.h"
+#include "../malloc.h"
+
+static unsigned int write_offset = 0;
+static unsigned int write_line = 0; 
+
+void backspace()
+{
+
+}
+
+void newline()
+{
+
+}
+
+void place_char(char c)
+{
+    
+    struct line_descriptor* line_desc = get_line(write_line);
+    if (line_desc == NULL) {
+        insert_line(write_line, 5);
+        line_desc = get_line(write_line);
+        debug_string[1] = (char)line_desc + '0';
+
+        if (line_desc == NULL) {
+            debug_string[2] = 'f';
+            return;
+        }
+    }
+    if (write_offset >= line_desc->allocated_length) {
+        if (resize_line(write_line, write_offset + 1)) {debug_string[2] = 'F'; return;}
+    }
+
+    debug_string[0] = c;
+    debug_string[1] = (char)write_offset + '0';
+    line_desc->string[write_offset] = c;
+
+    write_offset++;
+    if (write_offset > line_desc->saving_length) {
+        line_desc->saving_length = write_offset;
+    }
+}
+
+void put_char(char c)
+{
+    if (c == ALT_MEANING_CHAR) return;
+
+    place_char(c);
+}
+
+void put_string(const char* str)
+{
+    while (*str) {
+        put_char(*str);
+        str++;
+    }
+}
+
+void write_char(char c)
+{
+    switch (c) {
+        case '\n':
+            newline();
+            break;
+        case '\r':
+            write_offset = 0;
+            break;
+        case '\b':
+            backspace();
+            break;
+        case '\t':
+            place_char(ALT_MEANING_CHAR);
+            place_char(c);
+            break;
+        default:
+            place_char(c);
+            break;
+    }
+}
+
+void write_string(const char* str)
+{
+    while (*str) {
+        write_char(*str);
+        str++;
+    }
+}
+
+/*
+size_t get_string_saving_length(const char* str, size_t begin_offset)
+{
+    size_t length = begin_offset;
+
+    for (size_t i = 0; str[i]; i++) {
+        switch (str[i]) {
+            case '\n':
+                return length;
+            case '\t':
+                length += 2;
+                break;
+            case '\r':
+                {
+                    size_t length_after_return = get_string_saving_length(&str[i + 1], 0);
+                    return (length > length_after_return) ? length : length_after_return;
+                }
+            case '\b':
+                length--;
+                break;
+            default:
+                length++;
+                break;
+        }
+    }
+
+    return length;
+}
+
+void set_char(char c)
+{
+    line_desc->string[write_offset] = c;
+
+    write_offset++;
+    if (write_offset > line_desc->saving_length) {
+        line_desc->saving_length = write_offset;
+    }
+}
+
+inline void place_char(char c)
+{
+    if (write_offset >= line_desc->allocated_length) {
+        if (resize_line(write_line, write_offset + 1)) return;
+    }
+
+    set_char(c);
+}
+
+inline void place_alt_char(char c)
+{
+    if (write_offset + 1 >= line_desc->allocated_length) {
+        if (resize_line(write_line, write_offset + 2)) return;
+    }
+
+    set_char(ALT_MEANING_CHAR);
+    set_char(c);
+}
+
+void put_char(char c)
+{
+    if (c == ALT_MEANING_CHAR) return;
+
+    line_desc = get_line(write_line);
+    if (line_desc == NULL) return;
+
+    place_char(c);
+}
+
+void put_string(const char* str)
+{
+    line_desc = get_line(write_line);
+    if (line_desc == NULL) return;
+
+    size_t str_length = strlen(str);
+
+    if (write_offset + str_length > line_desc->allocated_length) {
+        if (resize_line(write_line, write_offset + str_length)) return;
+    }
+
+    for (size_t i = 0; i < str_length; i++) {
+        set_char(str[i]);
+    }
+}
+
+void write_char(char c)
+{
+    if (c == ALT_MEANING_CHAR) return;
+
+    line_desc = get_line(write_line);
+    if (line_desc == NULL) return;
+
+    switch (c) {
+        case '\n':
+            newline();
+            break;
+        case '\r':
+            write_offset = 0;
+            break;
+        case '\b':
+            backspace();
+            break;
+        case '\t':
+            place_alt_char(c);
+            break;
+        default:
+            place_char(c);
+            break;
+    }
+}
+
+void write_string(const char* str)
+{
+    while (*str) {
+        write_char(*str);
+        str++;
+    }
+}*/

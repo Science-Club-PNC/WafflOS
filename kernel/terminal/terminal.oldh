@@ -1,0 +1,40 @@
+#ifndef __terminal_h__
+#define __terminal_h__
+
+#include <stddef.h>
+
+#define ALT_MEANING_CHAR '\0'
+#define TAB_WIDTH 4
+
+struct line_descriptor {
+    char* string;
+    size_t allocated_length;
+    size_t saving_length;
+    size_t display_length;
+};
+
+char debug_string[25];
+
+void put_char(char c);
+void put_string(const char* c);
+void write_char(char c);
+void write_string(const char* c);
+
+void update_view();
+void set_view_location(size_t column, size_t line);
+
+int init_line_array(size_t length);
+void destroy_line_array();
+int resize_line_array(size_t length);
+
+void clear_line_array();
+
+int init_line(size_t line, size_t length);
+void destroy_line(size_t line);
+int resize_line(size_t line, size_t length);
+
+struct line_descriptor* get_line(size_t line);
+int insert_line(size_t line, size_t length);
+void remove_line(size_t line);
+
+#endif
