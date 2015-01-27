@@ -4,8 +4,8 @@
 #include <io.h>
 #include <memory.h>
 
-#include "terminal.h"
 #include "malloc.h"
+#include "terminal/terminal.h"
 
 // Define struct to point towards the end and start of used memory
 struct mem_tag{
@@ -136,9 +136,9 @@ inline void remove_tag(struct mem_tag* removed_tag, struct mem_tag* prev_tag) {
     }
 }
 
-// Splits the memory tag pointed towards with removed_tag. start and end define the start and end of the free space between the new tags. returns NULL if it fails to add another memory tag. 
+// Splits the memory tag pointed towards with removed_tag. start and end define the start and end of the free space between the new tags. returns NULL if it fails to add another memory tag.
 inline struct mem_tag* split_tag(void* start, void* end, struct mem_tag* splitted_tag) {
-    // Add a new tag to mark the upper part memory marked by the splitted tag. 
+    // Add a new tag to mark the upper part memory marked by the splitted tag.
     struct mem_tag* new_tag = add_tag(end, splitted_tag->end, splitted_tag);
 
     // Check if adding the memory tag succeed, and if not return NULL.
@@ -146,7 +146,7 @@ inline struct mem_tag* split_tag(void* start, void* end, struct mem_tag* splitte
         return NULL;
     }
 
-    // Lower the end of the splitted tag to only mark the lower part memory previously marked by the splitted tag. 
+    // Lower the end of the splitted tag to only mark the lower part memory previously marked by the splitted tag.
     splitted_tag->end = start;
 
     return new_tag;
@@ -156,7 +156,7 @@ inline struct mem_tag* split_tag(void* start, void* end, struct mem_tag* splitte
 inline void merge_tag(struct mem_tag* first_tag) {
     // Define the tag to remove in the merge.
     struct mem_tag* second_tag = first_tag->next;
-    // Merge the tags by setting first tag to overlap both tags. 
+    // Merge the tags by setting first tag to overlap both tags.
     first_tag->end = second_tag->end;
     // Remove the now unused seconds tag.
     remove_tag(second_tag, first_tag);
@@ -174,7 +174,7 @@ void* malloc(size_t requested_size) {
     struct mem_tag* cur_tag = first_tag;
     struct mem_tag* prev_tag = NULL;
 
-    // If no memory is currently allocated then just check if the actual size fits inside the heap (minus the buffer to be.) 
+    // If no memory is currently allocated then just check if the actual size fits inside the heap (minus the buffer to be.)
     if (cur_tag == NULL) {
         if (end_ptr <= heap_end - sizeof(struct mem_tag)) {
             add_tag(start_ptr, end_ptr, NULL);
@@ -241,7 +241,7 @@ void* calloc(size_t amount, size_t size)
 void* realloc(void* ptr, size_t requested_size)
 {
     if (ptr == NULL) return malloc(requested_size);  // Just let malloc handle this call.
-    if (requested_size == 0) free(ptr); // Just let free handle this call.
+    // if (requested_size == 0) free(ptr); // Just let free handle this call.
 
     // Find the start and end of the memory to reallocate.
     void* old_start_ptr = ptr - sizeof(size_t);
@@ -296,6 +296,7 @@ void* realloc(void* ptr, size_t requested_size)
                     }
                 }
             }
+
             return NULL;
         }
         prev_tag = cur_tag;
@@ -368,7 +369,7 @@ void print_heap()
             // The memory is reserved for tags
             printf("$f$!9");
         }
-        
+
         // Write two heximal chars representing the current byte.
         uint8_t cur_heximal = (*ptr & 0x0F);
         byte_string[0] = (cur_heximal > 9) ? cur_heximal - 10 + 'A' : cur_heximal + '0';

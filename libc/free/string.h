@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <limits.h>
 
-size_t strlen(char* str);
+size_t strlen(const char* str);
 char* to_uppercase(char* str, size_t len);
 char* to_lowercase(char* str, size_t len);
 char* string_reverse(char* target, size_t len);

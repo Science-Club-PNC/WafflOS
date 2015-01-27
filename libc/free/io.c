@@ -1,12 +1,13 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdarg.h>
-#include <kernel/terminal.h>
+#include <kernel/terminal/terminal.h>
+#include <kernel/terminal/vga.h>
 
 #include "io.h"
 #include "string.h"
 
-#define set_color(bg, value) if (bg) { vga_color.bg = value; } else { vga_color.fg = value; }
+#define set_color(bg, value) if (bg) { vga_current_style.bg = value; } else { vga_current_style.fg = value; }
 
 #define ERRCHAR '?'
 #define NUMBER_STRING_LENGTH 20
@@ -43,7 +44,6 @@ const char* get_format_data_size(const char* c, struct format* format);
 const char* get_format_output(const char* c, struct format* format, va_list* args);
 int print_format_output(struct format* format, int* output_count);
 
-
 int printf(const char* str, ...)
 {
     va_list args;
@@ -55,7 +55,7 @@ int printf(const char* str, ...)
         if (*c == '$') {
             c++;
             if (*c == '$') {
-                writechar('$');
+                write_char('$');
                 output_count++;
             } else {
                 c = handle_color_code(c, &output_count);
@@ -64,21 +64,21 @@ int printf(const char* str, ...)
         } else if (*c == '%') {
             c++;
             if (*c == '%') {
-                writechar('%');
+                write_char('%');
                 output_count++;
             } else {
                 c = handle_format_code(c, &output_count, &args);
                 if (!*c) break;
             }
         } else {
-            writechar(*c);
+            write_char(*c);
             output_count++;
         }
 
         c++;
     }
 
-    update_cursor();
+    //update_cursor();
     return output_count;
 }
 
@@ -87,8 +87,8 @@ const char* handle_color_code(const char* c, int* output_count)
     bool bg = false;
 
     if (*c == 'R') {
-        vga_color.fg = DEFAULT_FG_COLOR;
-        vga_color.bg = DEFAULT_BG_COLOR;
+        vga_current_style.fg = VGA_DEFAULT_FG_COLOR;
+        vga_current_style.bg = VGA_DEFAULT_BG_COLOR;
     } else {
         if (*c == '!') {
             bg = true;
@@ -100,12 +100,12 @@ const char* handle_color_code(const char* c, int* output_count)
             set_color(bg, *c - 'a' + 10);
         } else if (*c == 'r') {
             if (bg) {
-                vga_color.bg = DEFAULT_BG_COLOR;
+                vga_current_style.bg = VGA_DEFAULT_BG_COLOR;
             } else {
-                vga_color.fg = DEFAULT_FG_COLOR;
+                vga_current_style.fg = VGA_DEFAULT_FG_COLOR;
             }
         } else {
-            writechar(ERRCHAR);
+            write_char(ERRCHAR);
             ++*output_count;
         }
     }
@@ -354,29 +354,29 @@ int print_format_output(struct format* format, int* output_count)
     // Print spaces to justify right if that's the format
     if (format->justify_mode == right_justify) {
         while (output_string_length < format->minimal_output_width) {
-            writechar(' ');
+            write_char(' ');
             output_string_length++;
         }
     }
 
     // Print prefix
-    writestring(format->output_prefix_ptr);
+    write_string(format->output_prefix_ptr);
 
     // Print zero's to justify if that's the format
     if (format->justify_mode == zero_justify) {
         while (output_string_length < format->minimal_output_width) {
-            writechar('0');
+            write_char('0');
             output_string_length++;
         }
     }
 
     // Print output
-    writestring(format->output_string_ptr);
+    write_string(format->output_string_ptr);
 
     // Print spaces to justify left if that's the format
     if (format->justify_mode == left_justify) {
         while (output_string_length < format->minimal_output_width) {
-            writechar(' ');
+            write_char(' ');
             output_string_length++;
         }
     }
@@ -385,7 +385,7 @@ int print_format_output(struct format* format, int* output_count)
     return 0;
 
     error:
-    writechar(ERRCHAR);
+    write_char(ERRCHAR);
     ++*output_count;
     return 1;
 }

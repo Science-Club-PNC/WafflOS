@@ -1,7 +1,8 @@
 #include <base.h>
 #include <io.h>
 
-#include "terminal.h"
+#include "terminal/terminal.h"
+#include "terminal/vga.h"
 #include "malloc.h"
 
 void load(char *str) {
@@ -18,26 +19,11 @@ void fail() {
 
 void main()
 {
-    term_clear();
-
-    printf("\n$!f$0Welcome$R to $!2"OSNAME"$!r version "OSVERSION"!\n\n");
-
-    load("Initializing heap");
+    vga_clear();
     init_heap();
-    ok();
+    init_line_array(0);
 
-    load("Loading whatever");
-    // Do stuff
-    ok();
-    load("Loading something destined to fail miserably");
-    // Do some error stuff
-    fail();
-    printf("\n$R$0 0 $1 1 $2 2 $3 3 $4 4 $5 5 $6 6 $7 7 $8 8 $9 9 $a a $b b $c c $d d $e e $f f ");
-    printf("\n$R$!0 0 $!1 1 $!2 2 $!3 3 $!4 4 $!5 5 $!6 6 $!7 7 $!8 8 $!9 9 $!a a $!b b $!c c $!d d $!e e $!f f ");
-    printf("$R\n\n");
-    log_err("WE FAILED");
-    log_warn("is this a problem?");
-    log_info("worthless info! :D");
-    load("Loading something forever");
-    printf("\n\n");
+    printf("this is a very long string because of various reasons. primarly testing tho\nNEWLINE!!!\ni hate cake\ri like\nnewline\n123456789A 123456789B 123456789C 123456789D 123456789E 123456789A 123456789B 123456789C 123456789D 123456789E\n\n");
+    write_string("ab\rc\n");
+    update_view();
 }

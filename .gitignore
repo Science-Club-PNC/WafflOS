@@ -1,6 +1,8 @@
 # Editor files
 *~
 *.swp
+project
+.geanyprj
 
 # Output files
 obj

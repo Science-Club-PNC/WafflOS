@@ -4,9 +4,9 @@
 
 #include "string.h"
 
-size_t strlen(char* str)
+size_t strlen(const char* str)
 {
-    char* pos = str;
+    const char* pos = str;
     while (*pos) pos++;
     return pos - str;
 }
