@@ -4,6 +4,8 @@
 #include "terminal.h"
 #include "malloc.h"
 #include "descriptor/gdt.h"
+#include "interrupt/keyboard.h"
+#include "descriptor/idt.h"
 
 void load(char *str) {
     printf("[$eBUSY$r] %s", str);
@@ -31,6 +33,13 @@ void main()
     init_gdt();
     ok();
 
+    load("Initializing IDT");
+    add_keyboard_idt();
+    load_idt();
+    ok();
+
+    printf("Size of IDT: %i\n", sizeof(struct idt_entry));
+
     printf("\n\nRest of this is random stuff:\n");
 
     load("Loading whatever");
@@ -55,4 +64,6 @@ void main()
     printf("%012i,",-123456);
     printf("%0+12i,",123456);
     printf("%0 12i\n",123456);
+
+    __asm__("int $1");
 }

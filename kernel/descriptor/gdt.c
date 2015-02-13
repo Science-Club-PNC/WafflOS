@@ -12,25 +12,25 @@ struct gdt_entry {
     uint8_t base_middle;
 
     struct {
-        uint8_t ac: 1;  // Accessed
-        uint8_t rw: 1;  // Readable/Writable
-        uint8_t dc: 1;  // Direction/Conforming
-        uint8_t ex: 1;  // Executable
-        uint8_t one: 1;  // Always 1
-        uint8_t priv: 2;  // Privilege
-        uint8_t pr: 1;  // Present
+        unsigned int ac: 1;  // Accessed
+        unsigned int rw: 1;  // Readable/Writable
+        unsigned int dc: 1;  // Direction/Conforming
+        unsigned int ex: 1;  // Executable
+        unsigned int one: 1;  // Always 1
+        unsigned int priv: 2;  // Privilege
+        unsigned int pr: 1;  // Present
     } access;
 
     union {
         struct {
-            uint8_t limit_high: 4;
-            uint8_t: 4;  // Padding
+            unsigned int limit_high: 4;
+            unsigned int: 4;  // Padding
         };
         struct {
-            uint8_t: 4;  // Padding
-            uint8_t zero: 2;  // Always 0
-            uint8_t sz: 1;  // Size
-            uint8_t gr: 1;  // Granularity
+            unsigned int: 4;  // Padding
+            unsigned int zero: 2;  // Always 0
+            unsigned int sz: 1;  // Size
+            unsigned int gr: 1;  // Granularity
         } flags;
     };
 
@@ -59,7 +59,7 @@ void gdt_entry_init(struct gdt_entry* entry)
     entry->flags.zero = 0;
 }
 
-inline void load_gdt(struct gdt_entry (*gdt)[], uint16_t size)
+void load_gdt(struct gdt_entry (*gdt)[], uint16_t size)
 {
     struct {
         uint16_t size;
