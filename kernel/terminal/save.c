@@ -14,7 +14,7 @@ int init_line_array(size_t length)
     destroy_line_array();
 
     line_array = calloc(length, sizeof(line_descriptor));
-    if (line_array == NULL) {debug_string[6] = 'i'; return 1;}  // couldn't allocate memory for the line array
+    if (line_array == NULL) return 1;  // couldn't allocate memory for the line array
     line_array_length = length;
 
     last_line = 0;
@@ -37,7 +37,7 @@ int resize_line_array(size_t length)
     if (line_array == NULL) return init_line_array(length);
 
     line_descriptor* new_line_array = realloc(line_array, length * sizeof(line_descriptor));
-    if (new_line_array == NULL) {debug_string[5] = 'r'; return 1;}  // couldn't reallocate memory for the line array
+    if (new_line_array == NULL) return 1;  // couldn't reallocate memory for the line array
     line_array = new_line_array;
     line_array_length = length;
 
@@ -46,7 +46,7 @@ int resize_line_array(size_t length)
 
 line_descriptor* get_line(size_t line_number)
 {
-    if (line_number > last_line) return NULL;
+    if (line_number > last_line || line_number >= line_array_length) return NULL;
 
     return &line_array[line_number];
 }
@@ -69,7 +69,7 @@ int init_line(line_descriptor* line, size_t length)
     destroy_line(line);
 
     line->string = malloc(length);
-    if (line->string == NULL) {debug_string[8] = 'I'; return 1;}  // couldn't allocate momory for the string
+    if (line->string == NULL) return 1;  // couldn't allocate momory for the string
     line->allocated_length = length;
 
     line->saving_length = 0;
@@ -94,9 +94,30 @@ int resize_line(line_descriptor* line, size_t length)
     if (line->string == NULL) return init_line(line, length);
 
     char* new_string = realloc(line->string, length);
-    if (new_string == NULL) {debug_string[6] = 'R'; return 1;}  // couldn't reallocate memory for the string
+    if (new_string == NULL) return 1;  // couldn't reallocate memory for the string
     line->string = new_string;
     line->allocated_length = length;
 
     return 0;
+}
+size_t get_line_offset(line_descriptor* line, size_t column)
+{
+    if (line == NULL) return 0;
+
+    size_t offset = 0;
+    for (size_t i = 0; i < column; i++) {
+        while (line->string[offset] == '\0') {
+            offset += 2;
+            if (offset >= line->saving_length) {
+                return line->saving_length;
+            }
+        }
+
+        offset++;
+        if (offset >= line->saving_length) {
+            return line->saving_length;
+        }
+    }
+
+    return offset;
 }

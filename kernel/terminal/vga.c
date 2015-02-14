@@ -5,7 +5,7 @@
 #include "vga.h"
 #include "../ioport.h"
 
-union vga_style vga_current_style;
+vga_style vga_current_style;
 
 static uint16_t* buffer = (uint16_t*)0xB8000;
 

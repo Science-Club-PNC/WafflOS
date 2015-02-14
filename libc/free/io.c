@@ -7,7 +7,7 @@
 #include "io.h"
 #include "string.h"
 
-#define set_color(bg, value) if (bg) { vga_current_style.bg = value; } else { vga_current_style.fg = value; }
+#define set_color(bg, value) if (bg) { set_back_color(value); } else { set_front_color(value); }
 
 #define ERRCHAR '?'
 #define NUMBER_STRING_LENGTH 20
@@ -87,8 +87,7 @@ const char* handle_color_code(const char* c, int* output_count)
     bool bg = false;
 
     if (*c == 'R') {
-        vga_current_style.fg = VGA_DEFAULT_FG_COLOR;
-        vga_current_style.bg = VGA_DEFAULT_BG_COLOR;
+        reset_style();
     } else {
         if (*c == '!') {
             bg = true;
@@ -100,9 +99,9 @@ const char* handle_color_code(const char* c, int* output_count)
             set_color(bg, *c - 'a' + 10);
         } else if (*c == 'r') {
             if (bg) {
-                vga_current_style.bg = VGA_DEFAULT_BG_COLOR;
+                reset_back_color();
             } else {
-                vga_current_style.fg = VGA_DEFAULT_FG_COLOR;
+                reset_front_color();
             }
         } else {
             write_char(ERRCHAR);

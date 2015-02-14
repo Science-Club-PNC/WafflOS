@@ -23,7 +23,10 @@ void main()
     init_heap();
     init_line_array(0);
 
-    printf("this is a very long string because of various reasons. primarly testing tho\nNEWLINE!!!\ni hate cake\ri like\nnewline\n123456789A 123456789B 123456789C 123456789D 123456789E 123456789A 123456789B 123456789C 123456789D 123456789E\n\n");
-    write_string("ab\rc\n");
+    load("loading terminator");
+    printf("\n");
+    load("loading something terribly long... yolololololololololololololololololololololololololololololololololololo");
+    fail();
+
     update_view();
 }

@@ -6,37 +6,37 @@
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 
-#define VGA_DEFAULT_FG_COLOR white
-#define VGA_DEFAULT_BG_COLOR black
+#define VGA_DEFAULT_FG_COLOR vga_white
+#define VGA_DEFAULT_BG_COLOR vga_black
 
-enum vga_color {
-    black,
-    blue,
-    green,
-    cyan,
-    red,
-    magenta,
-    brown,
-    light_grey,
-    dark_grey,
-    light_blue,
-    light_green,
-    light_cyan,
-    light_red,
-    light_magenta,
-    light_brown,
-    white,
-};
+typedef enum {
+    vga_black,
+    vga_blue,
+    vga_green,
+    vga_cyan,
+    vga_red,
+    vga_magenta,
+    vga_brown,
+    vga_light_grey,
+    vga_dark_grey,
+    vga_light_blue,
+    vga_light_green,
+    vga_light_cyan,
+    vga_light_red,
+    vga_light_magenta,
+    vga_light_brown,
+    vga_white,
+} vga_color;
 
-union vga_style {
+typedef union {
     struct {
-        enum vga_color fg: 4;
-        enum vga_color bg: 4;
+        vga_color fg: 4;
+        vga_color bg: 4;
     };
     uint8_t value;
-};
+} vga_style;
 
-extern union vga_style vga_current_style;
+extern vga_style vga_current_style;
 
 void vga_set_char(int pos, char c);
 char vga_get_char(int pos);
