@@ -42,8 +42,6 @@ void main()
     load_idt();
     ok();
 
-    printf("Size of IDT: %i\n", sizeof(struct idt_entry));
-    printf("Size of GDT: %i\n", sizeof(struct gdt_entry));
     printf("keyboard wrapper pointer: %x\n", &keyboard_wrapper);
     printf("main() pointer: %x\n", &main);
     printf("ok() pointer: %x\n", &ok);
