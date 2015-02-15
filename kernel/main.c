@@ -4,6 +4,7 @@
 #include "terminal.h"
 #include "malloc.h"
 #include "descriptor/gdt.h"
+#include "interrupt/double_fault.h"
 #include "interrupt/keyboard.h"
 #include "descriptor/idt.h"
 
@@ -18,9 +19,11 @@ void ok() {
 void fail() {
     printf("\r[$cFAIL$r] \n");
 }
-
+extern void keyboard_wrapper();
 void main()
 {
+    bochs_print("----------------------------------------\n");
+
     term_clear();
 
     printf("\n$!f$0Welcome$R to $!2"OSNAME"$!r version "OSVERSION"!\n\n");
@@ -34,36 +37,23 @@ void main()
     ok();
 
     load("Initializing IDT");
+    add_double_fault_idt();
     add_keyboard_idt();
     load_idt();
     ok();
 
     printf("Size of IDT: %i\n", sizeof(struct idt_entry));
+    printf("Size of GDT: %i\n", sizeof(struct gdt_entry));
+    printf("keyboard wrapper pointer: %x\n", &keyboard_wrapper);
+    printf("main() pointer: %x\n", &main);
+    printf("ok() pointer: %x\n", &ok);
+    printf("GDT end: %x\n", 0xFFFFF);
 
-    printf("\n\nRest of this is random stuff:\n");
-
-    load("Loading whatever");
-    // Do stuff
-    ok();
-    load("Loading something destined to fail miserably");
-    // Do some error stuff
-    fail();
-    printf("\n$R$0 0 $1 1 $2 2 $3 3 $4 4 $5 5 $6 6 $7 7 $8 8 $9 9 $a a $b b $c c $d d $e e $f f ");
-    printf("\n$R$!0 0 $!1 1 $!2 2 $!3 3 $!4 4 $!5 5 $!6 6 $!7 7 $!8 8 $!9 9 $!a a $!b b $!c c $!d d $!e e $!f f ");
-    printf("$R\n\n");
-    log_err("WE FAILED");
-    log_warn("is this a problem?");
-    log_info("worthless info! :D");
-    load("Loading something forever");
-    printf("\n\n");
-    printf("%12x,",0x12AB);
-    printf("%#12x,",0x1234ABCD);
-    printf("%0#12X,",0x1234ABCD);
-    printf("%#12X\n",0x1234ABCD);
-    printf("%012i,",123456);
-    printf("%012i,",-123456);
-    printf("%0+12i,",123456);
-    printf("%0 12i\n",123456);
+    bochs_break();
 
     __asm__("int $1");
+
+    printf("still alive! :D");
+
+    bochs_break();
 }

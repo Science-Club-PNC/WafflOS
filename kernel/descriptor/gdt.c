@@ -19,19 +19,19 @@ struct gdt_entry {
         unsigned int one: 1;  // Always 1
         unsigned int priv: 2;  // Privilege
         unsigned int pr: 1;  // Present
-    } access;
+    } __attribute__((packed)) access;
 
     union {
         struct {
             unsigned int limit_high: 4;
             unsigned int: 4;  // Padding
-        };
+        } __attribute__((packed));
         struct {
             unsigned int: 4;  // Padding
             unsigned int zero: 2;  // Always 0
             unsigned int sz: 1;  // Size
             unsigned int gr: 1;  // Granularity
-        } flags;
+        } __attribute__((packed)) flags;
     };
 
     uint8_t base_high;

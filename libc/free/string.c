@@ -163,7 +163,7 @@ int dec_string_to_int(const char* source, size_t len) {
 
     bool output_is_negative = false;
     int a = 0;
-    int i = 0;
+    size_t i = 0;
 
     if (source[0] == '-') {
         output_is_negative = true;
