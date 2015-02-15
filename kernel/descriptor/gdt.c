@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <io.h>
 
 #include "load.h"
 
@@ -46,6 +47,15 @@ void gdt_entry_base(struct gdt_entry* entry, uint32_t base)
 
 void gdt_entry_limit(struct gdt_entry* entry, uint32_t limit)
 {
+    if (limit > 0xFFFFF) {
+        if ((limit & 0xFFF) != 0xFFF) {
+            printf("Unvalid GDT limit, rounding limit up to nearest 0xFFF\n");
+        }
+
+        entry->flags.gr = 1;
+        limit >>= 12;
+    }
+
     entry->limit_low = limit;
     entry->limit_high = limit >> 16;
 }
@@ -96,7 +106,7 @@ void init_gdt()
 
         gdt_entry_init(&gdt[i]);
         gdt_entry_base(&gdt[i], 0);
-        gdt_entry_limit(&gdt[i], 0xFFFFF);
+        gdt_entry_limit(&gdt[i], 0xFFFFFFFF);
     }
 
     load_gdt(&gdt, sizeof(gdt));
