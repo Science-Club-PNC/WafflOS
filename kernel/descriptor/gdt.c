@@ -110,4 +110,6 @@ void init_gdt()
     }
 
     load_gdt(&gdt, sizeof(gdt));
+
+    __asm__("ljmp %0, $fake_label \n\t fake_label: \n\t" :: "i"(0x8));
 }

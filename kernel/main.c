@@ -19,9 +19,12 @@ void ok() {
 void fail() {
     printf("\r[$cFAIL$r] \n");
 }
-extern void keyboard_wrapper();
+
 void main()
 {
+    // This just makes reading the bochs debug output a little bit easier. :)
+    bochs_print("----------------------------------------\n");
+    bochs_print("-------------WafflOS booted-------------\n");
     bochs_print("----------------------------------------\n");
 
     term_clear();
@@ -42,16 +45,9 @@ void main()
     load_idt();
     ok();
 
-    printf("keyboard wrapper pointer: %x\n", &keyboard_wrapper);
-    printf("main() pointer: %x\n", &main);
-    printf("ok() pointer: %x\n", &ok);
-    printf("GDT end: %x\n", 0xFFFFF);
-
-    bochs_break();
+    printf("\nFinished Initializing, starting tests:\n");
 
     __asm__("int $1");
 
-    printf("still alive! :D");
-
-    bochs_break();
+    printf("\nReached end of main(): halting CPU");
 }
