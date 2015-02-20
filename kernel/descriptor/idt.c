@@ -1,8 +1,8 @@
 #include <stdint.h>
 
-#include "load.h"
-
 #include "idt.h"
+#include "load.h"
+#include "../interrupt/double_fault.h"
 
 void idt_entry_base(struct idt_entry* entry, uint32_t base)
 {
@@ -20,4 +20,12 @@ void load_idt()
     idtr.size = sizeof(idt);
     idtr.base = (uint32_t)idt;
     lidt(&idtr);
+}
+
+void init_idt()
+{
+    load_idt();
+
+    // TODO: handle all CPU exceptions
+    add_double_fault_interrupt();
 }

@@ -4,24 +4,31 @@
 #include "terminal.h"
 #include "malloc.h"
 #include "descriptor/gdt.h"
-#include "interrupt/double_fault.h"
-#include "interrupt/keyboard.h"
 #include "descriptor/idt.h"
+#include "interrupt/pit.h"
+#include "interrupt/keyboard.h"
+#include "hardware/pic.h"
 
-void load(char *str) {
+void load(char *str)
+{
     printf("[$eBUSY$r] %s", str);
 }
 
-void ok() {
+void ok()
+{
     printf("\r[ $aOK$r ] \n");
 }
 
-void fail() {
+void fail()
+{
     printf("\r[$cFAIL$r] \n");
 }
 
 void main()
 {
+    // Just to make sure the PIC doesn't call any undefined interrupts before they're ready.
+    disable_interrupts();
+
     // This just makes reading the bochs debug output a little bit easier. :)
     bochs_print("----------------------------------------\n");
     bochs_print("-------------WafflOS booted-------------\n");
@@ -40,14 +47,33 @@ void main()
     ok();
 
     load("Initializing IDT");
-    add_double_fault_idt();
-    add_keyboard_idt();
-    load_idt();
+    init_idt();
     ok();
+
+    load("Initializing PIC");
+    init_pic();
+    ok();
+
+    load("Initializing PIT");
+#define SHUT_UP_PIT  // Disabled because PIT won't shut up xD (temporary)
+#ifdef SHUT_UP_PIT
+    fail();
+#else
+    init_pit();
+    ok();
+#endif
+
+    load("Initializing keyboard");
+    init_keyboard();
+    ok();
+
+    enable_interrupts();
 
     printf("\nFinished Initializing, starting tests:\n");
 
-    __asm__("int $1");
+    printf("\nReached end of main(): halting CPU\n");
 
-    printf("\nReached end of main(): halting CPU");
+    loop:
+    __asm__("hlt");
+    goto loop;
 }

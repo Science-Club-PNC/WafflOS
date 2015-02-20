@@ -1,6 +1,7 @@
 #ifndef __keyboard_h__
 #define __keyboard_h__
 
-void add_keyboard_idt();
+void init_keyboard();
+void add_keyboard_interrupt();
 
 #endif

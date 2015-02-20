@@ -5,6 +5,9 @@
 
 #define MAXIDT 256
 
+#define enable_interrupts() __asm__("sti")
+#define disable_interrupts() __asm__("cli")
+
 struct idt_entry {
     uint16_t base_low;
 
@@ -36,5 +39,6 @@ struct idt_entry idt[MAXIDT];
 
 void idt_entry_base(struct idt_entry* entry, uint32_t base);
 void load_idt();
+void init_idt();
 
 #endif

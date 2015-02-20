@@ -5,14 +5,16 @@
 
 extern void double_fault_wrapper();
 
-void double_fault_handler() {
+void double_fault_handler()
+{
     printf("Double fault!\n");
 
     loop:
     goto loop;
 }
 
-void add_double_fault_idt() {
+void add_double_fault_interrupt()
+{
     struct idt_entry* entry = &idt[8];
     idt_entry_base(entry, (uint32_t)&double_fault_wrapper);
     entry->attr.pr = 1;
