@@ -2,6 +2,7 @@
 #define __base_h__
 
 #include <io.h>
+#include <kernel/ioport.h>
 
 // Some centeralised basic information.
 #define OSNAME "WafflOS"
@@ -9,8 +10,13 @@
 
 // If not compiling in GNU C omit __attribute__().
 #ifndef __GNUC__
-#define  __attribute__(x)
+#define __attribute__(x)
 #endif
+
+// outputs a string to the bochs debug console
+#define bochs_print(str) {size_t i = 0; while(str[i]) {outb(0xe9, str[i]); i++;}}
+// stops simulation and breaks into the debug console
+#define bochs_break() outw(0x8A00,0x8A00); outw(0x8A00,0x8AE0);
 
 // Print debug message. can be disabled by defining NDEBUG.
 #ifdef NDEBUG

@@ -37,3 +37,11 @@ uint32_t inl(uint16_t port)
     __asm__( "inl %1, %0" : "=a"(ret) : "Nd"(port) );
     return ret;
 }
+
+void io_wait()
+{
+    // TODO: maybe find a more sleak/trusty way to do this?
+    __asm__ volatile( "jmp 1f\n\t"
+                      "1: jmp 2f\n\t"
+                      "2: " );
+}

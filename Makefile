@@ -3,7 +3,9 @@ rwildcard = $(foreach d, $(wildcard $1*), $(filter $(subst *, %, $2), $d) $(call
 # Programs
 CC := i686-elf-gcc
 AS := i686-elf-as
+GRUB_MKRESCUE := grub-mkrescue
 QEMU := qemu-system-i386
+BOCHS := bochs
 GDB := gdb
 
 # Flags
@@ -12,9 +14,11 @@ LDFLAGS := -O2
 
 # Output files
 kernel := kernel.img
+iso := wafflos.iso
 
 # Directories
 dir_object := obj
+dir_cd := .cdroot
 
 # Files
 sources := $(call rwildcard, */, *.c *.s)
@@ -35,13 +39,19 @@ $(kernel): $(filter-out $(dir_object)/kernel/* $(dir_object)/libc/free/*, $(obje
 	@echo "[$(CC)] Linking $@"
 	@$(LINK.o) -T kernel/linker.ld -ffreestanding -nostdlib -lgcc $(OUTPUT_OPTION) $^
 
+$(iso): $(kernel)
+	@cp $(kernel) $(dir_cd)/boot/$(kernel)
+	@$(GRUB_MKRESCUE) -o $@ $(dir_cd)
+
 .PHONY: all
 all: $(kernel)
 
 .PHONY: clean
 clean:
-	@rm -rf $(kernel) $(dir_object)
+	@echo "Clean!"
+	@rm -rf $(dir_object) $(kernel) $(iso) $(dir_cd)/boot/$(kernel)
 
+# Emulators, debuggers, other external programs
 .PHONY: qemu
 qemu: $(kernel)
 	@$(QEMU) -kernel $(kernel)
@@ -50,3 +60,7 @@ qemu: $(kernel)
 gdb: $(kernel)
 	@$(QEMU) -S -s -kernel $(kernel) &
 	@$(GDB)
+
+.PHONY: bochs
+bochs: $(iso)
+	@$(BOCHS) -f .bochsrc -q
