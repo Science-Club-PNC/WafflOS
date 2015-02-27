@@ -6,7 +6,7 @@
 #include "descriptor/gdt.h"
 #include "descriptor/idt.h"
 #include "interrupt/pit.h"
-#include "interrupt/keyboard.h"
+#include "keyboard/interrupt.h"
 #include "hardware/pic.h"
 
 void load(char *str) {
