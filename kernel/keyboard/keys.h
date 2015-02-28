@@ -121,6 +121,7 @@ enum keynums {
     keynum_left_GUI,
     keynum_right_GUI,
 
+    keynum_power,
     keynum_sleep,
     keynum_wake,
 
@@ -146,6 +147,8 @@ enum keynums {
     keynum_previous_track,
     keynum_next_track,
     keynum_stop,
+
+    KEYNUM_AMOUNT
 };
 
 typedef struct {

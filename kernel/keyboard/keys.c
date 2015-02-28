@@ -123,6 +123,7 @@ static const key_data keynum_data[] = {
     {'\0', '\0', "left_GUI", NULL},
     {'\0', '\0', "right_GUI", NULL},
 
+    {'\0', '\0', "power", NULL},
     {'\0', '\0', "sleep", NULL},
     {'\0', '\0', "wake", NULL},
 
@@ -343,7 +344,7 @@ static const uint16_t alt_keycode_numbers[] = {
     keynum_play_pause,
     keynum_unknown,
     keynum_unknown,
-    keynum_unknown,
+    keynum_power,
     keynum_www_back,
     keynum_unknown,
     keynum_www_home,
@@ -417,13 +418,60 @@ static const uint16_t alt_keycode_numbers[] = {
 };
 static size_t alt_keycode_numbers_length = sizeof(alt_keycode_numbers) / sizeof(uint16_t);
 
+static uint8_t key_down_list[KEYNUM_AMOUNT/8] = { 0, 1, 6, 0 };
+
 static bool scroll_lock = false;
 static bool number_lock = false;
 static bool caps_lock = false;
 
-void handle_keycode(uint8_t extended_keycode, uint8_t keycode, bool break_keycode) {
-    uint16_t keynum = keynum_unknown;
+static bool shift_down = false;
+static bool ctrl_down = false;
+static bool alt_down = false;
 
+bool keyboard_get_shift_down() {
+    return shift_down;
+}
+
+bool keyboard_get_ctrl_down() {
+    return ctrl_down;
+}
+
+bool keyboard_get_alt_down() {
+    return alt_down;
+}
+
+bool keyboard_get_key_down(uint16_t keynum)
+{
+    if (keynum < KEYNUM_AMOUNT) {
+        return (key_down_list[keynum/8] >> (keynum % 8)) & 1;
+    }
+
+    return false;
+}
+
+void keyboard_set_key_down(uint16_t keynum, bool key_is_down)
+{
+    if (keynum < KEYNUM_AMOUNT) {
+        if (key_is_down) {
+            key_down_list[keynum/8] |= (1 << (keynum % 8));
+        } else {
+            key_down_list[keynum/8] &= ~(1 << (keynum % 8));
+        }
+
+        if (keynum == keynum_left_shift || keynum == keynum_right_shift) {
+            shift_down = keyboard_get_key_down(keynum_left_shift) || keyboard_get_key_down(keynum_right_shift);
+        } else if (keynum == keynum_left_ctrl || keynum == keynum_right_ctrl) {
+            ctrl_down = keyboard_get_key_down(keynum_left_ctrl) || keyboard_get_key_down(keynum_right_ctrl);
+        } else if (keynum == keynum_left_alt || keynum == keynum_right_alt) {
+            alt_down = keyboard_get_key_down(keynum_left_alt) || keyboard_get_key_down(keynum_right_alt);
+        }
+    }
+}
+
+void handle_keycode(uint8_t extended_keycode, uint8_t keycode, bool break_keycode)
+{
+    // Get keynum
+    uint16_t keynum = keynum_unknown;
     if (extended_keycode == 0) {
         if (keycode < regular_keycode_numbers_length) {
             keynum = regular_keycode_numbers[keycode];
@@ -434,7 +482,46 @@ void handle_keycode(uint8_t extended_keycode, uint8_t keycode, bool break_keycod
         }
     }
 
-    printf("keyboard: %s %-20s (%c)\t(keycode: %hhx%hhx)\n", break_keycode ? "released" : " pressed", keynum_data[keynum].name, keynum_data[keynum].character, extended_keycode, keycode);
+    // Determine event and update key state
+    uint8_t event = break_keycode;
+    if (break_keycode) {
+        keyboard_set_key_down(keynum, false);
+    } else {
+        if (keyboard_get_key_down(keynum)) {
+            event = 2;
+        } else {
+            keyboard_set_key_down(keynum, true);
+        }
+    }
+
+    // Switch key locks if any key lock is pressed
+    if (event == 0) {
+        switch (keynum) {
+            case keynum_caps_lock:
+                keyboard_set_caps_lock(!caps_lock);
+                break;
+            case keynum_number_lock:
+                keyboard_set_number_lock(!number_lock);
+                break;
+            case keynum_scroll_lock:
+                keyboard_set_scroll_lock(!scroll_lock);
+                break;
+        }
+    }
+
+    // Get key name and character
+    const char* key_name;
+    char key_character;
+    if ((shift_down != caps_lock) && (keynum_data[keynum].upper_name != NULL)) {
+        key_name = keynum_data[keynum].upper_name;
+        key_character = keynum_data[keynum].upper_character;
+    } else {
+        key_name = keynum_data[keynum].name;
+        key_character = keynum_data[keynum].character;
+    }
+
+    static const char* event_names[] = {" pressed", "released", "    held"};
+    printf("keyboard: %s %-20s (%c)\t(keycode: %hhx%hhx)\n", event_names[event], key_name, key_character, extended_keycode, keycode);
 }
 
 bool keyboard_get_scroll_lock()
