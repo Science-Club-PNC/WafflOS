@@ -512,7 +512,7 @@ void handle_keycode(uint8_t extended_keycode, uint8_t keycode, bool break_keycod
     // Get key name and character
     const char* key_name;
     char key_character;
-    if ((shift_down != caps_lock) && (keynum_data[keynum].upper_name != NULL)) {
+    if (((keynum <= keynum_z && keynum >= keynum_a) ? (shift_down != caps_lock) : shift_down) && (keynum_data[keynum].upper_name != NULL)) {
         key_name = keynum_data[keynum].upper_name;
         key_character = keynum_data[keynum].upper_character;
     } else {

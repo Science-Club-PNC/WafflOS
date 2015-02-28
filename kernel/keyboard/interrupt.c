@@ -25,7 +25,9 @@ void keyboard_handler()
             extended_keycode = keycode;
         } else if(keycode == 0xF0) {
             break_keycode = true;
-        } else {
+        } else if (keycode == 0x00 || keycode == 0xAA || keycode == 0xEE || keycode == 0xFA || keycode == 0xFC || keycode == 0xFD || keycode == 0xFE || keycode == 0xFF) {
+            // TODO: add special byte handling
+        } else{
             handle_keycode(extended_keycode, keycode, break_keycode);
             extended_keycode = 0x00;
             break_keycode = false;
