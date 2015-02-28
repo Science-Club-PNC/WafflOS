@@ -16,9 +16,6 @@ void keyboard_handler()
 {
     disable_interrupts();
 
-    static int i = 0;
-    i++;
-
     static uint8_t extended_keycode = 0x00;
     static bool break_keycode = false;
 
@@ -29,7 +26,7 @@ void keyboard_handler()
         } else if(keycode == 0xF0) {
             break_keycode = true;
         } else {
-            printf("keyboard INT #%03i: %s %hhx%hhx\n", i, break_keycode ? "released" : "pressed", extended_keycode, keycode);
+            handle_keycode(extended_keycode, keycode, break_keycode);
             extended_keycode = 0x00;
             break_keycode = false;
         }
