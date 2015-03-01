@@ -3,6 +3,7 @@
 
 #include "terminal.h"
 #include "malloc.h"
+#include "event.h"
 #include "descriptor/gdt.h"
 #include "descriptor/idt.h"
 #include "interrupt/pit.h"
@@ -68,11 +69,23 @@ void main()
 
     enable_interrupts();
 
-    printf("\nFinished Initializing, starting tests:\n");
+    printf("\nFinished Initializing, starting main loop:\n");
 
-    printf("\nReached end of main(): halting CPU\n");
+    while (true) {
+        // handle events
+        event_list events = get_events();
+        for (size_t event_num = 0; event_num < events.length; event_num++) {
+            switch (events.events[event_num].type) {
+                case event_type_keyboard: {
+                    keyboard_event* event = (keyboard_event*)&events.events[event_num];
+                    if (!event->key_was_released) {
+                        printf("%c", event->character);
+                    }
+                }
+            }
+        }
 
-    loop:
-    __asm__("hlt");
-    goto loop;
+        // pause
+        __asm__("hlt");
+    }
 }

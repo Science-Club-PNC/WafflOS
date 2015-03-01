@@ -5,6 +5,7 @@
 
 #include "keys.h"
 #include "encoder.h"
+#include "../event.h"
 
 static const key_data keynum_data[] = {
     {'\0', '\0', "unknown", NULL},
@@ -483,19 +484,19 @@ void handle_keycode(uint8_t extended_keycode, uint8_t keycode, bool break_keycod
     }
 
     // Determine event and update key state
-    uint8_t event = break_keycode;
+    uint8_t state = break_keycode;
     if (break_keycode) {
         keyboard_set_key_down(keynum, false);
     } else {
         if (keyboard_get_key_down(keynum)) {
-            event = 2;
+            state = 2;
         } else {
             keyboard_set_key_down(keynum, true);
         }
     }
 
     // Switch key locks if any key lock is pressed
-    if (event == 0) {
+    if (state == 0) {
         switch (keynum) {
             case keynum_caps_lock:
                 keyboard_set_caps_lock(!caps_lock);
@@ -510,18 +511,25 @@ void handle_keycode(uint8_t extended_keycode, uint8_t keycode, bool break_keycod
     }
 
     // Get key name and character
-    const char* key_name;
     char key_character;
     if (((keynum <= keynum_z && keynum >= keynum_a) ? (shift_down != caps_lock) : shift_down) && (keynum_data[keynum].upper_name != NULL)) {
-        key_name = keynum_data[keynum].upper_name;
         key_character = keynum_data[keynum].upper_character;
     } else {
-        key_name = keynum_data[keynum].name;
         key_character = keynum_data[keynum].character;
     }
 
-    static const char* event_names[] = {" pressed", "released", "    held"};
-    printf("keyboard: %s %-20s (%c)\t(keycode: %hhx%hhx)\n", event_names[event], key_name, key_character, extended_keycode, keycode);
+    keyboard_event* event = (keyboard_event*) add_event(event_type_keyboard);
+    event->event = state;
+    event->shift_down = shift_down;
+    event->ctrl_down = ctrl_down;
+    event->alt_down = alt_down;
+    event->caps_lock = caps_lock;
+    event->number_lock = number_lock;
+    event->scroll_lock = scroll_lock;
+    event->keynum = keynum;
+    event->character = key_character;
+//    static const char* event_names[] = {" pressed", "released", "    held"};
+//    printf("keyboard: %s %-20s (%c)\t(keycode: %hhx%hhx)\n", event_names[event], key_name, key_character, extended_keycode, keycode);
 }
 
 bool keyboard_get_scroll_lock()
