@@ -38,11 +38,11 @@ typedef struct {
 static const char* handle_color_code(const char* c, int* output_count);
 static const char* handle_format_code(const char* c, int* output_count, va_list* args);
 
-static const char* get_format_flags(const char* c, struct format* format);
-static const char* get_format_width(const char* c, struct format* format, va_list* args);
-static const char* get_format_data_size(const char* c, struct format* format);
-static const char* get_format_output(const char* c, struct format* format, va_list* args);
-static int print_format_output(struct format* format, int* output_count);
+static const char* get_format_flags(const char* c, format* cur_format);
+static const char* get_format_width(const char* c, format* cur_format, va_list* args);
+static const char* get_format_data_size(const char* c, format* cur_format);
+static const char* get_format_output(const char* c, format* cur_format, va_list* args);
+static int print_format_output(format* cur_format, int* output_count);
 
 
 int printf(const char* str, ...)
@@ -115,48 +115,48 @@ static const char* handle_color_code(const char* c, int* output_count)
 
 static const char* handle_format_code(const char* c, int* output_count, va_list* args)
 {
-    struct format format;
+    format cur_format;
 
-    c = get_format_flags(c, &format);
-    c = get_format_width(c, &format, args);
-    c = get_format_data_size(c, &format);
+    c = get_format_flags(c, &cur_format);
+    c = get_format_width(c, &cur_format, args);
+    c = get_format_data_size(c, &cur_format);
 
     char number_string[NUMBER_STRING_LENGTH] = "";
     char prefix_string[4] = "";
 
-    format.output_string_ptr = number_string;
-    format.output_prefix_ptr = prefix_string;
+    cur_format.output_string_ptr = number_string;
+    cur_format.output_prefix_ptr = prefix_string;
 
-    c = get_format_output(c, &format, args);
-    print_format_output(&format, output_count);
+    c = get_format_output(c, &cur_format, args);
+    print_format_output(&cur_format, output_count);
 
     return c;
 }
 
-static const char* get_format_flags(const char* c, struct format* format)
+static const char* get_format_flags(const char* c, format* cur_format)
 {
     // Set default flag variables.
-    format->justify_mode = right_justify;
-    format->sign_fill_in = '\0';
-    format->add_type_prefix = false;
+    cur_format->justify_mode = right_justify;
+    cur_format->sign_fill_in = '\0';
+    cur_format->add_type_prefix = false;
 
     // Get flags
     while (true) {
         switch (*c) {
             case '-':
-                format->justify_mode = left_justify;
+                cur_format->justify_mode = left_justify;
                 break;
             case '0':
-                format->justify_mode = zero_justify;
+                cur_format->justify_mode = zero_justify;
                 break;
             case ' ':
-                format->sign_fill_in = ' ';
+                cur_format->sign_fill_in = ' ';
                 break;
             case '+':
-                format->sign_fill_in = '+';
+                cur_format->sign_fill_in = '+';
                 break;
             case '#':
-                format->add_type_prefix = true;
+                cur_format->add_type_prefix = true;
                 break;
             default:
                 // Current char isn't a flag, return.
@@ -166,14 +166,14 @@ static const char* get_format_flags(const char* c, struct format* format)
     }
 }
 
-static const char* get_format_width(const char* c, struct format* format, va_list* args)
+static const char* get_format_width(const char* c, format* cur_format, va_list* args)
 {
     // Set default minimal output width
-    format->minimal_output_width = 0;
+    cur_format->minimal_output_width = 0;
 
     // Get minimal output width
     if (*c == '*') {
-        format->minimal_output_width = va_arg(*args, int);
+        cur_format->minimal_output_width = va_arg(*args, int);
         c++;
     } else {
         const char* width_string = c;
@@ -183,50 +183,50 @@ static const char* get_format_width(const char* c, struct format* format, va_lis
             c++;
         }
         if (width_string_length > 0) {
-            format->minimal_output_width = dec_string_to_int(width_string, width_string_length);
+            cur_format->minimal_output_width = dec_string_to_int(width_string, width_string_length);
         }
     }
 
     return c;
 }
 
-static const char* get_format_data_size(const char* c, struct format* format)
+static const char* get_format_data_size(const char* c, format* cur_format)
 {
     // Set default data size
-    format->data_size = 0;  // Data is int sized (if using integer specifier)
+    cur_format->data_size = 0;  // Data is int sized (if using integer specifier)
 
     // Get data size
     if (*c == 'h') {
         c++;
         if (*c == 'h') {
-            format->data_size = -2;  // Data is char sized.
+            cur_format->data_size = -2;  // Data is char sized.
             c++;
         } else {
-            format->data_size = -1;  // Data is short sized.
+            cur_format->data_size = -1;  // Data is short sized.
         }
     } else if (*c == 'l') {
         c++;
         if (*c == 'l') {
-            format->data_size = 2;  // Data is long long sized.
+            cur_format->data_size = 2;  // Data is long long sized.
             c++;
         } else {
-            format->data_size = 1;  // Data is long sized.
+            cur_format->data_size = 1;  // Data is long sized.
         }
     }
 
     return c;
 }
 
-static const char* get_format_output(const char* c, struct format* format, va_list* args)
+static const char* get_format_output(const char* c, format* cur_format, va_list* args)
 {
     switch (*c) {
         case 's':
             // String
-            format->specifier_type = text;
+            cur_format->specifier_type = text;
 
-            switch(format->data_size) {
+            switch(cur_format->data_size) {
                 case 0:
-                    format->output_string_ptr = va_arg(*args, char*);
+                    cur_format->output_string_ptr = va_arg(*args, char*);
                     break;
                 default:
                     goto error;
@@ -236,11 +236,11 @@ static const char* get_format_output(const char* c, struct format* format, va_li
 
         case 'c':
             // Character
-            format->specifier_type = text;
+            cur_format->specifier_type = text;
 
-            switch(format->data_size) {
+            switch(cur_format->data_size) {
                 case 0:
-                    format->output_string_ptr[0] = va_arg(*args, int);
+                    cur_format->output_string_ptr[0] = va_arg(*args, int);
                     break;
                 default:
                     goto error;
@@ -251,87 +251,87 @@ static const char* get_format_output(const char* c, struct format* format, va_li
         case 'd':
         case 'i':
             // Signed decimal integer
-            format->specifier_type = decimal;
+            cur_format->specifier_type = decimal;
 
-            switch(format->data_size) {
+            switch(cur_format->data_size) {
                 case -2:
                 case -1:
-                    format->output_string_ptr = short_to_dec_string(va_arg(*args, int), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = short_to_dec_string(va_arg(*args, int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 0:
-                    format->output_string_ptr = int_to_dec_string(va_arg(*args, int), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = int_to_dec_string(va_arg(*args, int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 1:
-                    format->output_string_ptr = long_to_dec_string(va_arg(*args, long), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = long_to_dec_string(va_arg(*args, long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 default:
                     goto error;
             }
 
-            if (format->output_string_ptr[0] == '-') {
-                format->output_prefix_ptr[0] = '-';
-                format->output_string_ptr++;
-            } else if (format->sign_fill_in) {
-                format->output_prefix_ptr[0] = format->sign_fill_in;
+            if (cur_format->output_string_ptr[0] == '-') {
+                cur_format->output_prefix_ptr[0] = '-';
+                cur_format->output_string_ptr++;
+            } else if (cur_format->sign_fill_in) {
+                cur_format->output_prefix_ptr[0] = cur_format->sign_fill_in;
             }
             break;
 
         case 'u':
             // Unsigned decimal integer
-            format->specifier_type = decimal;
+            cur_format->specifier_type = decimal;
 
-            switch(format->data_size) {
+            switch(cur_format->data_size) {
                 case -2:
                 case -1:
-                    format->output_string_ptr = ushort_to_dec_string(va_arg(*args, unsigned int), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = ushort_to_dec_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 0:
-                    format->output_string_ptr = uint_to_dec_string(va_arg(*args, unsigned int), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = uint_to_dec_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 1:
-                    format->output_string_ptr = ulong_to_dec_string(va_arg(*args, unsigned long), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = ulong_to_dec_string(va_arg(*args, unsigned long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 default:
                     goto error;
             }
 
-            if (format->sign_fill_in) {
-                format->output_prefix_ptr[0] = format->sign_fill_in;
+            if (cur_format->sign_fill_in) {
+                cur_format->output_prefix_ptr[0] = cur_format->sign_fill_in;
             }
             break;
 
         case 'x':
         case 'X':
             // Unsigned heximal integer
-            format->specifier_type = heximal;
+            cur_format->specifier_type = heximal;
 
-            switch(format->data_size) {
+            switch(cur_format->data_size) {
                 case -2:
-                    format->output_string_ptr = char_to_hex_string(va_arg(*args, unsigned int), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = char_to_hex_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case -1:
-                    format->output_string_ptr = short_to_hex_string(va_arg(*args, unsigned int), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = short_to_hex_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 0:
-                    format->output_string_ptr = int_to_hex_string(va_arg(*args, unsigned int), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = int_to_hex_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 1:
-                    format->output_string_ptr = long_to_hex_string(va_arg(*args, unsigned long), format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = long_to_hex_string(va_arg(*args, unsigned long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 default:
                     goto error;
             }
 
             if (*c == 'X') {
-                if (format->add_type_prefix) {
-                    format->output_prefix_ptr[0] = '0';
-                    format->output_prefix_ptr[1] = 'X';
+                if (cur_format->add_type_prefix) {
+                    cur_format->output_prefix_ptr[0] = '0';
+                    cur_format->output_prefix_ptr[1] = 'X';
                 }
-                to_uppercase(format->output_string_ptr, NUMBER_STRING_LENGTH);
+                to_uppercase(cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
             } else {
-                if (format->add_type_prefix) {
-                    format->output_prefix_ptr[0] = '0';
-                    format->output_prefix_ptr[1] = 'x';
+                if (cur_format->add_type_prefix) {
+                    cur_format->output_prefix_ptr[0] = '0';
+                    cur_format->output_prefix_ptr[1] = 'x';
                 }
             }
             break;
@@ -342,41 +342,41 @@ static const char* get_format_output(const char* c, struct format* format, va_li
     return c;
 
     error:
-    format->output_string_ptr = NULL;
+    cur_format->output_string_ptr = NULL;
     return c;
 }
 
-static int print_format_output(struct format* format, int* output_count)
+static int print_format_output(format* cur_format, int* output_count)
 {
-    if (format->output_string_ptr == NULL)  goto error;
+    if (cur_format->output_string_ptr == NULL)  goto error;
 
-    size_t output_string_length = strlen(format->output_string_ptr) + strlen(format->output_prefix_ptr);
+    size_t output_string_length = strlen(cur_format->output_string_ptr) + strlen(cur_format->output_prefix_ptr);
 
     // Print spaces to justify right if that's the format
-    if (format->justify_mode == right_justify) {
-        while (output_string_length < format->minimal_output_width) {
+    if (cur_format->justify_mode == right_justify) {
+        while (output_string_length < cur_format->minimal_output_width) {
             writechar(' ');
             output_string_length++;
         }
     }
 
     // Print prefix
-    writestring(format->output_prefix_ptr);
+    writestring(cur_format->output_prefix_ptr);
 
     // Print zero's to justify if that's the format
-    if (format->justify_mode == zero_justify) {
-        while (output_string_length < format->minimal_output_width) {
+    if (cur_format->justify_mode == zero_justify) {
+        while (output_string_length < cur_format->minimal_output_width) {
             writechar('0');
             output_string_length++;
         }
     }
 
     // Print output
-    writestring(format->output_string_ptr);
+    writestring(cur_format->output_string_ptr);
 
     // Print spaces to justify left if that's the format
-    if (format->justify_mode == left_justify) {
-        while (output_string_length < format->minimal_output_width) {
+    if (cur_format->justify_mode == left_justify) {
+        while (output_string_length < cur_format->minimal_output_width) {
             writechar(' ');
             output_string_length++;
         }
