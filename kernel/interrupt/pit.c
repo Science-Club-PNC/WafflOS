@@ -1,3 +1,4 @@
+#include <base.h>
 #include <io.h>
 
 #include "pit.h"
@@ -8,16 +9,9 @@ extern void pit_wrapper();
 
 // TODO: write some PIT control/read functions
 
-void pit_handler()
+static void add_pit_idt()
 {
-    // TODO: Interrupts really shouldn't use printf
-    printf("PIT fired\n");
-    pic_send_EOI(0x0);
-}
-
-void add_pit_idt()
-{
-    struct idt_entry* entry = &idt[PIC1_OFFSET + 0];
+    idt_entry* entry = &idt[PIC1_OFFSET + 0];
     idt_entry_base(entry, (uint32_t)&pit_wrapper);
     entry->attr.pr = 1;
     entry->attr.priv = 0;
@@ -27,6 +21,13 @@ void add_pit_idt()
     entry->selector.ti = 0;
     entry->selector.index = 1;
     entry->zero = 0;
+}
+
+void pit_handler()
+{
+    // TODO: Interrupts really shouldn't use printf
+    printf("PIT fired\n");
+    pic_send_EOI(0x0);
 }
 
 void init_pit()

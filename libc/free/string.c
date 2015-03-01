@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "string.h"
+#include "base.h"
 
 size_t strlen(char* str)
 {

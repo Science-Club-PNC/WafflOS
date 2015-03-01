@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <kernel/terminal.h>
 
+#include "base.h"
 #include "io.h"
 #include "string.h"
 
@@ -11,7 +12,7 @@
 #define ERRCHAR '?'
 #define NUMBER_STRING_LENGTH 20
 
-struct format {
+typedef struct {
     enum {
         right_justify,
         left_justify,
@@ -32,16 +33,16 @@ struct format {
 
     char* output_string_ptr;
     char* output_prefix_ptr;
-};
+} format;
 
-const char* handle_color_code(const char* c, int* output_count);
-const char* handle_format_code(const char* c, int* output_count, va_list* args);
+static const char* handle_color_code(const char* c, int* output_count);
+static const char* handle_format_code(const char* c, int* output_count, va_list* args);
 
-const char* get_format_flags(const char* c, struct format* format);
-const char* get_format_width(const char* c, struct format* format, va_list* args);
-const char* get_format_data_size(const char* c, struct format* format);
-const char* get_format_output(const char* c, struct format* format, va_list* args);
-int print_format_output(struct format* format, int* output_count);
+static const char* get_format_flags(const char* c, struct format* format);
+static const char* get_format_width(const char* c, struct format* format, va_list* args);
+static const char* get_format_data_size(const char* c, struct format* format);
+static const char* get_format_output(const char* c, struct format* format, va_list* args);
+static int print_format_output(struct format* format, int* output_count);
 
 
 int printf(const char* str, ...)
@@ -82,7 +83,7 @@ int printf(const char* str, ...)
     return output_count;
 }
 
-const char* handle_color_code(const char* c, int* output_count)
+static const char* handle_color_code(const char* c, int* output_count)
 {
     bool bg = false;
 
@@ -112,7 +113,7 @@ const char* handle_color_code(const char* c, int* output_count)
     return c;
 }
 
-const char* handle_format_code(const char* c, int* output_count, va_list* args)
+static const char* handle_format_code(const char* c, int* output_count, va_list* args)
 {
     struct format format;
 
@@ -132,7 +133,7 @@ const char* handle_format_code(const char* c, int* output_count, va_list* args)
     return c;
 }
 
-const char* get_format_flags(const char* c, struct format* format)
+static const char* get_format_flags(const char* c, struct format* format)
 {
     // Set default flag variables.
     format->justify_mode = right_justify;
@@ -165,7 +166,7 @@ const char* get_format_flags(const char* c, struct format* format)
     }
 }
 
-const char* get_format_width(const char* c, struct format* format, va_list* args)
+static const char* get_format_width(const char* c, struct format* format, va_list* args)
 {
     // Set default minimal output width
     format->minimal_output_width = 0;
@@ -189,7 +190,7 @@ const char* get_format_width(const char* c, struct format* format, va_list* args
     return c;
 }
 
-const char* get_format_data_size(const char* c, struct format* format)
+static const char* get_format_data_size(const char* c, struct format* format)
 {
     // Set default data size
     format->data_size = 0;  // Data is int sized (if using integer specifier)
@@ -216,7 +217,7 @@ const char* get_format_data_size(const char* c, struct format* format)
     return c;
 }
 
-const char* get_format_output(const char* c, struct format* format, va_list* args)
+static const char* get_format_output(const char* c, struct format* format, va_list* args)
 {
     switch (*c) {
         case 's':
@@ -345,7 +346,7 @@ const char* get_format_output(const char* c, struct format* format, va_list* arg
     return c;
 }
 
-int print_format_output(struct format* format, int* output_count)
+static int print_format_output(struct format* format, int* output_count)
 {
     if (format->output_string_ptr == NULL)  goto error;
 

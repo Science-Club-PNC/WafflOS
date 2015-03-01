@@ -1,3 +1,4 @@
+#include <base.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -5,18 +6,18 @@
 
 #include "terminal.h"
 
-uint16_t* buffer = (uint16_t*)0xB8000;
+static uint16_t* buffer = (uint16_t*)0xB8000;
 static const int width = 80;
 static const int height = 25;
 int pos_x = 0;
 int pos_y = 0;
 
-void set_entry(int pos, char c)
+static inline void set_entry(int pos, char c)
 {
     buffer[pos] = c | vga_color.value << 8;
 }
 
-char get_char(int pos)
+static inline char get_char(int pos)
 {
     return (char)buffer[pos];
 }

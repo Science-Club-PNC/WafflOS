@@ -4,25 +4,25 @@
 #include <stdint.h>
 
 enum vga_color {
-    black,
-    blue,
-    green,
-    cyan,
-    red,
-    magenta,
-    brown,
-    light_grey,
-    dark_grey,
-    light_blue,
-    light_green,
-    light_cyan,
-    light_red,
-    light_magenta,
-    light_brown,
-    white,
+    vga_black,
+    vga_blue,
+    vga_green,
+    vga_cyan,
+    vga_red,
+    vga_magenta,
+    vga_brown,
+    vga_light_grey,
+    vga_dark_grey,
+    vga_light_blue,
+    vga_light_green,
+    vga_light_cyan,
+    vga_light_red,
+    vga_light_magenta,
+    vga_light_brown,
+    vga_white,
 };
-#define DEFAULT_FG_COLOR white
-#define DEFAULT_BG_COLOR black
+#define DEFAULT_FG_COLOR vga_white
+#define DEFAULT_BG_COLOR vga_black
 
 union {
     struct {
@@ -36,6 +36,7 @@ void update_cursor();
 void term_clear();
 void backspace();
 void newline();
+
 void putchar(char c);
 void writechar(char c);
 void writestring(char* str);

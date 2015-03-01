@@ -1,3 +1,4 @@
+#include <base.h>
 #include <io.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -40,7 +41,7 @@ void keyboard_handler()
 
 void add_keyboard_interrupt()
 {
-    struct idt_entry* entry = &idt[PIC1_OFFSET + 0x1];
+    idt_entry* entry = &idt[PIC1_OFFSET + 0x1];
     idt_entry_base(entry, (uint32_t)&keyboard_wrapper);
     entry->attr.pr = 1;
     entry->attr.priv = 0;

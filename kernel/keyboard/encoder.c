@@ -1,3 +1,4 @@
+#include <base.h>
 #include <stdint.h>
 #include <stdbool.h>
 

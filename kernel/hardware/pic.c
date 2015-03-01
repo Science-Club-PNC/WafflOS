@@ -1,3 +1,6 @@
+#include <base.h>
+#include <stdint.h>
+
 #include "pic.h"
 #include "../ioport.h"
 
@@ -20,12 +23,7 @@
 #define PIC_ICW4_BUF_MASTER     0x0C
 #define PIC_ICW4_SFNM           0x10
 
-void init_pic()
-{
-    pic_remap(PIC1_OFFSET, PIC2_OFFSET);
-}
-
-void pic_remap(int offset1, int offset2)
+static void pic_remap(uint8_t offset1, uint8_t offset2)
 {
     // Init PICs in single (cascade) mode
     outb(PIC1_COMMAND, PIC_ICW1_INIT | PIC_ICW1_ICW4);
@@ -56,7 +54,12 @@ void pic_remap(int offset1, int offset2)
     outb(PIC2_DATA, 0xF);
 }
 
-void pic_set_mask(unsigned char IRQline) {
+void init_pic()
+{
+    pic_remap(PIC1_OFFSET, PIC2_OFFSET);
+}
+
+void pic_set_mask(uint8_t IRQline) {
     uint16_t port;
     uint8_t value;
 
@@ -70,7 +73,7 @@ void pic_set_mask(unsigned char IRQline) {
     outb(port, value);
 }
 
-void pic_clear_mask(unsigned char IRQline) {
+void pic_clear_mask(uint8_t IRQline) {
     uint16_t port;
     uint8_t value;
 
@@ -84,7 +87,7 @@ void pic_clear_mask(unsigned char IRQline) {
     outb(port, value);
 }
 
-void pic_send_EOI(unsigned char irq)
+void pic_send_EOI(uint8_t irq)
 {
         if(irq >= 8) {
                 outb(PIC2_COMMAND,PIC_EOI);

@@ -8,7 +8,7 @@
 #define enable_interrupts() __asm__("sti")
 #define disable_interrupts() __asm__("cli")
 
-struct idt_entry {
+typedef struct {
     uint16_t base_low;
 
     struct {
@@ -33,12 +33,11 @@ struct idt_entry {
     } __attribute__((packed)) attr;
 
     uint16_t base_high;
-} __attribute__((packed));
+} __attribute__((packed)) idt_entry;
 
-struct idt_entry idt[MAXIDT];
+idt_entry idt[MAXIDT];
 
-void idt_entry_base(struct idt_entry* entry, uint32_t base);
-void load_idt();
+void idt_entry_base(idt_entry* entry, uint32_t base);
 void init_idt();
 
 #endif

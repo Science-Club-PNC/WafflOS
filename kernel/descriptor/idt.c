@@ -1,16 +1,11 @@
+#include <base.h>
 #include <stdint.h>
 
 #include "idt.h"
 #include "load.h"
 #include "../interrupt/double_fault.h"
 
-void idt_entry_base(struct idt_entry* entry, uint32_t base)
-{
-    entry->base_low = base;
-    entry->base_high = base >> 16;
-}
-
-void load_idt()
+static void load_idt()
 {
     struct {
         uint16_t size;
@@ -20,6 +15,12 @@ void load_idt()
     idtr.size = sizeof(idt);
     idtr.base = (uint32_t)idt;
     lidt(&idtr);
+}
+
+void idt_entry_base(idt_entry* entry, uint32_t base)
+{
+    entry->base_low = base;
+    entry->base_high = base >> 16;
 }
 
 void init_idt()

@@ -20,7 +20,7 @@ stack_top:
 .type _start, @function
 _start:
     movl $stack_top, %esp
-    call main
+    call kernel_main
     cli
     hlt
 

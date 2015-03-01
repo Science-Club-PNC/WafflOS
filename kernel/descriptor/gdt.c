@@ -1,3 +1,4 @@
+#include <base.h>
 #include <stdint.h>
 #include <io.h>
 
@@ -7,45 +8,14 @@
 
 #define MAXGDT 5
 
-struct gdt_entry {
-    uint16_t limit_low;
-    uint16_t base_low;
-    uint8_t base_middle;
-
-    struct {
-        unsigned int ac: 1;  // Accessed
-        unsigned int rw: 1;  // Readable/Writable
-        unsigned int dc: 1;  // Direction/Conforming
-        unsigned int ex: 1;  // Executable
-        unsigned int one: 1;  // Always 1
-        unsigned int priv: 2;  // Privilege
-        unsigned int pr: 1;  // Present
-    } __attribute__((packed)) access;
-
-    union {
-        struct {
-            unsigned int limit_high: 4;
-            unsigned int: 4;  // Padding
-        } __attribute__((packed));
-        struct {
-            unsigned int: 4;  // Padding
-            unsigned int zero: 2;  // Always 0
-            unsigned int sz: 1;  // Size
-            unsigned int gr: 1;  // Granularity
-        } __attribute__((packed)) flags;
-    };
-
-    uint8_t base_high;
-} __attribute__((packed));
-
-void gdt_entry_base(struct gdt_entry* entry, uint32_t base)
+static void gdt_entry_base(gdt_entry* entry, uint32_t base)
 {
     entry->base_low = base;
     entry->base_middle = base >> 16;
     entry->base_high = base >> 24;
 }
 
-void gdt_entry_limit(struct gdt_entry* entry, uint32_t limit)
+static void gdt_entry_limit(gdt_entry* entry, uint32_t limit)
 {
     if (limit > 0xFFFFF) {
         if ((limit & 0xFFF) != 0xFFF) {
@@ -61,7 +31,7 @@ void gdt_entry_limit(struct gdt_entry* entry, uint32_t limit)
 }
 
 // Initialize universally standard values for entry
-void gdt_entry_init(struct gdt_entry* entry)
+static void gdt_entry_init(gdt_entry* entry)
 {
     entry->access.ac = 0;
     entry->access.pr = 1;
@@ -69,7 +39,7 @@ void gdt_entry_init(struct gdt_entry* entry)
     entry->flags.zero = 0;
 }
 
-void load_gdt(struct gdt_entry (*gdt)[], uint16_t size)
+static void load_gdt(gdt_entry (*gdt)[], uint16_t size)
 {
     struct {
         uint16_t size;
@@ -83,7 +53,7 @@ void load_gdt(struct gdt_entry (*gdt)[], uint16_t size)
 
 void init_gdt()
 {
-    static struct gdt_entry gdt[MAXGDT];
+    static gdt_entry gdt[MAXGDT];
 
     gdt[1].access.ex = 1;  // Code
     gdt[1].access.priv = 0;  // Kernel

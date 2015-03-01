@@ -10,6 +10,5 @@ void free(void* ptr);
 
 void init_heap();
 void print_heap();
-void test_heap();
 
 #endif

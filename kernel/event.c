@@ -1,8 +1,12 @@
+#include <base.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "event.h"
 #include "malloc.h"
+
+#define BUFFER_START_LENGTH 0x20
+#define BUFFER_GROWTH_STEP 0X10
 
 typedef struct {
     base_event* array;
