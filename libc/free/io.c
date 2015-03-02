@@ -10,7 +10,7 @@
 #define set_color(bg, value) if (bg) { vga_color.bg = value; } else { vga_color.fg = value; }
 
 #define ERRCHAR '?'
-#define NUMBER_STRING_LENGTH 20
+#define NUMBER_STRING_LENGTH 33
 
 typedef struct {
     enum {
@@ -256,13 +256,11 @@ static const char* get_format_output(const char* c, format* cur_format, va_list*
             switch(cur_format->data_size) {
                 case -2:
                 case -1:
-                    cur_format->output_string_ptr = short_to_dec_string(va_arg(*args, int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
-                    break;
                 case 0:
-                    cur_format->output_string_ptr = int_to_dec_string(va_arg(*args, int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = number_to_dec_string(va_arg(*args, int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 1:
-                    cur_format->output_string_ptr = long_to_dec_string(va_arg(*args, long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = number_to_dec_string(va_arg(*args, long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 default:
                     goto error;
@@ -283,13 +281,11 @@ static const char* get_format_output(const char* c, format* cur_format, va_list*
             switch(cur_format->data_size) {
                 case -2:
                 case -1:
-                    cur_format->output_string_ptr = ushort_to_dec_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
-                    break;
                 case 0:
-                    cur_format->output_string_ptr = uint_to_dec_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = unsigned_number_to_dec_string(va_arg(*args, int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 1:
-                    cur_format->output_string_ptr = ulong_to_dec_string(va_arg(*args, unsigned long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = unsigned_number_to_dec_string(va_arg(*args, long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 default:
                     goto error;
@@ -307,16 +303,16 @@ static const char* get_format_output(const char* c, format* cur_format, va_list*
 
             switch(cur_format->data_size) {
                 case -2:
-                    cur_format->output_string_ptr = char_to_hex_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = number_to_hex_string((unsigned char)va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case -1:
-                    cur_format->output_string_ptr = short_to_hex_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = number_to_hex_string((unsigned short)va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 0:
-                    cur_format->output_string_ptr = int_to_hex_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = number_to_hex_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 case 1:
-                    cur_format->output_string_ptr = long_to_hex_string(va_arg(*args, unsigned long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    cur_format->output_string_ptr = number_to_hex_string(va_arg(*args, unsigned long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
                     break;
                 default:
                     goto error;
@@ -335,6 +331,42 @@ static const char* get_format_output(const char* c, format* cur_format, va_list*
                 }
             }
             break;
+
+        case 'b':
+        case 'B':
+            // Unsigned binary integer
+            cur_format->specifier_type = heximal;
+
+            switch(cur_format->data_size) {
+                case -2:
+                    cur_format->output_string_ptr = number_to_binary_string((unsigned char)va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    break;
+                case -1:
+                    cur_format->output_string_ptr = number_to_binary_string((unsigned short)va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    break;
+                case 0:
+                    cur_format->output_string_ptr = number_to_binary_string(va_arg(*args, unsigned int), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    break;
+                case 1:
+                    cur_format->output_string_ptr = number_to_binary_string(va_arg(*args, unsigned long), cur_format->output_string_ptr, NUMBER_STRING_LENGTH);
+                    break;
+                default:
+                    goto error;
+            }
+
+            if (*c == 'B') {
+                if (cur_format->add_type_prefix) {
+                    cur_format->output_prefix_ptr[0] = '0';
+                    cur_format->output_prefix_ptr[1] = 'B';
+                }
+            } else {
+                if (cur_format->add_type_prefix) {
+                    cur_format->output_prefix_ptr[0] = '0';
+                    cur_format->output_prefix_ptr[1] = 'b';
+                }
+            }
+            break;
+
         default:
             // Unknown type
             goto error;
