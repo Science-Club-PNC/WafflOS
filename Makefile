@@ -64,3 +64,4 @@ gdb: $(kernel)
 .PHONY: bochs
 bochs: $(iso)
 	@$(BOCHS) -f .bochsrc -q
+

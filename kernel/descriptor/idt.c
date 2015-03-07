@@ -3,7 +3,7 @@
 
 #include "idt.h"
 #include "load.h"
-#include "../interrupt/double_fault.h"
+#include "../interrupt/cpu_exceptions.h"
 
 static void load_idt()
 {
@@ -27,6 +27,5 @@ void init_idt()
 {
     load_idt();
 
-    // TODO: handle all CPU exceptions
-    add_double_fault_interrupt();
+    init_cpu_exceptions();
 }
